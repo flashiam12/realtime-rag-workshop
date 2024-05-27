@@ -1,6 +1,8 @@
 ## Confluent Event Driven Workshop 
 ### GenAI Powered Real time Sentiment Analysis Pipeline 
-    With Confluent Cloud Kafka as the central nervous system, the idea to operationalize and adopt GenAI managed services from various hyperscalers looks a very feasible reality. 
+```bash 
+### With Confluent Cloud Kafka as the central nervous system, the idea to operationalize and adopt GenAI managed services from various hyperscalers looks a very feasible reality. 
+```
 
 ![alt text](./assets/example.png)
 
