@@ -40,9 +40,7 @@ terraform init
 terraform apply
 
 cat vector_store.txt
-```
 
-```bash 
 # b. LLM API
 cd .. # Navigate to Root 
 export OPENAI_APIKEY="xxxx"
@@ -56,33 +54,25 @@ export OPENAI_APIKEY="xxxx"
 # a. Confluent Cloud API 
 export CONFLUENT_CLOUD_API_KEY="<cloud_api_key>"
 export CONFLUENT_CLOUD_API_SECRET="<cloud_api_secret>"
-```
 
-```bash
 # b. Setup kafka cluster & flink pool 
 cd confluent
 
 terraform init
 terraform apply -target confluent_kafka_cluster.default -target confluent_flink_compute_pool.default
-```
 
-```bash
 # c. Setup the topics required for Frontend and market news scrapper
 
 terraform apply -target confluent_kafka_topic.frontend_prompt_raw -target confluent_kafka_topic.news_context_raw -target confluent_kafka_topic.news_context_embedding -target confluent_kafka_topic.retrieval_prompt_contextindex
-```
 
-```bash 
 # d. Confluent CLI Setup
 confluent --help # Check if CLI is installed properly
-
 confluent login # Provide the username & password to signin
-
 confluent env use "<confluent_env>" # Created in 2b
-
 confluent api-key create --resource "<cluster_id>" --description "Cluster Default Key" # Cluster created in 2c
 
-# Store the above api key
+# e. Define the Client properties for kafka clients
+
 ```
 
 #### 3. Market News Scrapper App
@@ -93,9 +83,7 @@ confluent api-key create --resource "<cluster_id>" --description "Cluster Defaul
 cd .. # Back to root directory
 export SCRAP_STOCK_SYMBOL="CFLT"
 export STOCK_MARKET="NASDAQ"
-```
 
-```bash 
 # b. News Producer Kafka Client
 export CC_CLUSTER_API_KEY="xxxx" # Created in step 2d
 export CC_CLUSTER_API_SECRET="xxxx" # Created in step 2d
@@ -111,16 +99,17 @@ export CC_KAFKA_RAW_NEWS_TOPIC="<context raw topic>" # Created in step 2c
 
 #### 1. Process
 ```bash
-
+# a. Export required vars
 export CC_KAFKA_RAW_NEWS_TOPIC="<context raw topic>"
 export CC_KAFKA_EMBEDDING_NEWS_TOPIC="<context embedding topic>"
+
+# b. Start the news embedding kafka client
 ./scripts/news_embedding_client.sh
 
 ```
 #### 2. Connect
 ```bash
 # a. Create Mongo Atlas Sink connector for News Emdedding Upsert to Mongo Atlas Vector Search
-
 cd confluent
 terraform apply -target confluent_connector.knowledge_embedding_mongo_sink 
 
@@ -148,57 +137,97 @@ SELECT * FROM ${CC_KAFKA_EMBEDDING_NEWS_TOPIC}
 
 ```bash
 # a. Export the required the params
-
 export CC_KAFKA_RAW_PROMPT_TOPIC="<>"
 export CC_KAFKA_PROMPT_CONTEXTINDEX_TOPIC="<>"
 export MONGO_ATLAS_ENDPOINT="<>"
 export MONGO_USERNAME="<>"
 export MONGO_PASSWORD="<>"
 
+# b. Start the prompt emdedding kafka client
 ./scripts/prompt_embedding_client.sh
 ```
 
 #### 2. Stream
 
 ```bash
+# a. Export the required the params
 export CC_FLINK_COMPUTE_POOL_ID="<flink compute pool id>"
 export CC_ENV_ID="<confluent env id>"
 
-# c. Log on to flink shell
+# b. Log on to flink shell
 confluent flink shell --compute-pool ${CC_FLINK_COMPUTE_POOL_ID} --environment ${CC_ENV_ID}
 
-# d. Check messages in the topic table
+# c. Check messages in the topic table
 SELECT * FROM ${CC_KAFKA_PROMPT_CONTEXTINDEX_TOPIC}
 
 ```
 
 ### Augmentation & Generation Pipeline
 
-#### 1. Stream 
+#### 1. Process
+```bash
+# a. Export the required the params
+export CC_FLINK_COMPUTE_POOL_ID="<flink compute pool id>"
+export CC_ENV_ID="<confluent env id>"
 
-    Response Topic for Prompt Answer from LLM 
+# b. Log on to flink shell
+confluent flink shell --compute-pool ${CC_FLINK_COMPUTE_POOL_ID} --environment ${CC_ENV_ID}
 
-#### 2. Connect 
+# c. Create Enriched Prompt Table
 
-    LLM Http Sink 
+# d. Flink SQL to enrich prompt with context text & semantic pre-processing
 
-#### 3. Process
+# e. Insert the final result to Enriched Prompt Table
+```
 
-    a. Create Enriched Prompt Table
-####
-    b. Flink SQL to enrich prompt with context text & semantic pre-processing
+#### 2. Connect
+```bash
+# a. Create Mongo Atlas Sink connector for News Emdedding Upsert to Mongo Atlas Vector Search
+cd confluent
+terraform apply -target confluent_connector.generation_llm_request
 
+# b. Get the configurations for the created connector 
+confluent connect describe "<cc connector id>" # Created above
+```
+
+#### 3. Stream
+```bash 
+# a. export Topic for LLM HTTP response
+export CC_KAFKA_PROMPT_RESPONSE_TOPIC="<prompt answer topic>" # Get from 2b
+export CC_FLINK_COMPUTE_POOL_ID="<flink compute pool id>"
+export CC_ENV_ID="<confluent env id>"
+
+# b. Log on to flink shell
+confluent flink shell --compute-pool ${CC_FLINK_COMPUTE_POOL_ID} --environment ${CC_ENV_ID}
+
+# c. Check messages in the topic table
+SELECT * FROM ${CC_KAFKA_PROMPT_RESPONSE_TOPIC}
+```
 
 ### Frontend App Testing
+```bash
+# a. Define required vars
+export CC_KAFKA_RAW_PROMPT_TOPIC="<prompt raw topic>"
+export CC_KAFKA_PROMPT_RESPONSE_TOPIC="<prompt answer topic>"
 
-    a. Configure Prompt Producer
-####
-    b. Configure Answer Consumer
-####
-    c. Run the frontend application with given prompt & answer topics
-#### 
-    d. Produce the prompt as input and check the answers
-####
-    e. Check the answer & modify as per the need from the app
+# b. Start the frontend app
+./scripts/frontend_app.sh
+
+# c. Produce the prompt as input and check the answers
+
+# d. Check the answer & modify as per the need
+```
 
 ### Teardown
+
+```bash 
+# a. Destroy Confluent resources
+cd confluent
+terraform destroy
+
+# b. Destroy Mongo Resources
+cd external
+terraform destroy
+
+# c. Stop all the running scripts
+```
