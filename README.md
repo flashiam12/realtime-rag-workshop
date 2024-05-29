@@ -44,6 +44,8 @@ cat vector_store.txt
 
 ```bash 
 # b. LLM API
+cd .. # Navigate to Root 
+export OPENAI_APIKEY="xxxx"
 
 ./scripts/test_llm_api.sh
 ```
@@ -67,7 +69,7 @@ terraform apply -target confluent_kafka_cluster.default -target confluent_flink_
 ```bash
 # c. Setup the topics required for Frontend and market news scrapper
 
-terraform apply -target confluent_kafka_topic.frontend_prompt_raw -target confluent_kafka_topic.news_context_raw
+terraform apply -target confluent_kafka_topic.frontend_prompt_raw -target confluent_kafka_topic.news_context_raw -target confluent_kafka_topic.news_context_embedding -target confluent_kafka_topic.retrieval_prompt_contextindex
 ```
 
 ```bash 
@@ -108,55 +110,67 @@ export CC_KAFKA_RAW_NEWS_TOPIC="<context raw topic>" # Created in step 2c
 ### Real Time Knowledge Pipeline 
 
 #### 1. Process
-```bash 
+```bash
+
 export CC_KAFKA_RAW_NEWS_TOPIC="<context raw topic>"
 export CC_KAFKA_EMBEDDING_NEWS_TOPIC="<context embedding topic>"
 ./scripts/news_embedding_client.sh
 
 ```
-
-#### 2. Stream 
+#### 2. Connect
 ```bash
-# a. Get the configurations for the created connector 
-confluent connect describe "<cc connector id>" # Created in 1a
-
-# b. set the context embedding topic
-export TOPIC_CONTEXT_EMBEDDING="<http response topic>" # Get from above step
-```
-
-#### 1. Connect
-```bash
-# a. Create HTTP Sink conenctor for Raw news Emdedding Creation
+# a. Create Mongo Atlas Sink connector for News Emdedding Upsert to Mongo Atlas Vector Search
 
 cd confluent
-terraform apply -target confluent_connector.knowledge_embedding 
+terraform apply -target confluent_connector.knowledge_embedding_mongo_sink 
 
+# b. Get the configurations for the created connector 
+confluent connect describe "<cc connector id>" # Created above
 ```
 
-    a. Index Upsert to Vector Store
-####
-    b. Raw News Context Kafka Consumer
+#### 3. Stream 
+```bash
 
+# a. Define flink compute pool id and env id 
+export CC_FLINK_COMPUTE_POOL_ID="<flink compute pool id>"
+export CC_ENV_ID="<confluent env id>"
+
+# b. Log on to flink shell
+confluent flink shell --compute-pool ${CC_FLINK_COMPUTE_POOL_ID} --environment ${CC_ENV_ID}
+
+# c. Check messages in the topic table
+SELECT * FROM ${CC_KAFKA_EMBEDDING_NEWS_TOPIC}
+```
 
 ### Retrieval Pipeline
 
-#### 1. Stream 
+#### 1. Process 
 
-    a. Response Topic for Raw Prompt Embeddings
+```bash
+# a. Export the required the params
 
-####
+export CC_KAFKA_RAW_PROMPT_TOPIC="<>"
+export CC_KAFKA_PROMPT_CONTEXTINDEX_TOPIC="<>"
+export MONGO_ATLAS_ENDPOINT="<>"
+export MONGO_USERNAME="<>"
+export MONGO_PASSWORD="<>"
 
-    b. Response Topic for Retrived Index Ids against prompt embeddings
+./scripts/prompt_embedding_client.sh
+```
 
-#### 2. Connect 
+#### 2. Stream
 
-    Embedding API Http Sink
+```bash
+export CC_FLINK_COMPUTE_POOL_ID="<flink compute pool id>"
+export CC_ENV_ID="<confluent env id>"
 
-#### 3. Process
+# c. Log on to flink shell
+confluent flink shell --compute-pool ${CC_FLINK_COMPUTE_POOL_ID} --environment ${CC_ENV_ID}
 
-    a. Index Retrieval from Vector Store
-####
-    b. Prompt + Retrived Index Kafka Producer
+# d. Check messages in the topic table
+SELECT * FROM ${CC_KAFKA_PROMPT_CONTEXTINDEX_TOPIC}
+
+```
 
 ### Augmentation & Generation Pipeline
 
