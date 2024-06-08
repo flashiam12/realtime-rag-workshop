@@ -1,0 +1,26 @@
+
+{ 
+    "$schema": "http://json-schema.org/draft-07/schema#", 
+    "title": "PromptContextIndex-value", 
+    "description": "Topic to collect matched context indexes for prompt", 
+    "type": "object", 
+    "properties": { 
+        "id": { 
+            "description": "PromptContextIndex id", 
+            "type": "string" 
+            }, 
+        "prompt": { 
+            "description": "PromptContextIndex prompt", 
+            "type": "string" 
+            }, 
+        "context_indexes": { 
+            "description": "PromptContextIndex context_indexes", 
+            "type": "string" 
+        }, 
+        "timestamp": { 
+            "description": "PromptContextIndex timestamp", 
+            "type": "string" 
+        } 
+    }, 
+    "required": ["id", "prompt", "context_indexes", "timestamp"] 
+}

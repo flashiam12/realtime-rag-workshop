@@ -1,0 +1,26 @@
+
+{ 
+    "$schema": "http://json-schema.org/draft-07/schema#", 
+    "title": "ContextEmbedding-value", 
+    "description": "Topic to collect knowledge embeddings", 
+    "type": "object", 
+    "properties": { 
+        "id": { 
+            "description": "ContextEmbedding id", 
+            "type": "string" 
+            }, 
+        "source": { 
+            "description": "ContextEmbedding source", 
+            "type": "string" 
+            }, 
+        "knowledge_embedding": { 
+            "description": "ContextEmbedding knowledge_embedding", 
+            "type": "string" 
+        }, 
+        "published_at": { 
+            "description": "ContextEmbedding published_at", 
+            "type": "string" 
+        } 
+    }, 
+    "required": ["id", "source", "knowledge_embedding", "published_at"] 
+}

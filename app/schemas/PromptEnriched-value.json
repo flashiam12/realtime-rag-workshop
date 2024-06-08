@@ -1,0 +1,26 @@
+
+{ 
+    "$schema": "http://json-schema.org/draft-07/schema#", 
+    "title": "PromptEnriched", 
+    "description": "Topic to collect enriched prompt with context", 
+    "type": "object", 
+    "properties": { 
+        "id": { 
+            "description": "PromptEnriched id", 
+            "type": "string" 
+            }, 
+        "messages": { 
+            "description": "PromptEnriched messages", 
+            "type": "string" 
+            }, 
+        "model": { 
+            "description": "PromptEnriched model", 
+            "type": "string" 
+            }, 
+        "temperature": { 
+            "description": "PromptEnriched temperature", 
+            "type": "number" 
+            } 
+        }, 
+    "required": ["id", "messages", "model", "temperature"] 
+}

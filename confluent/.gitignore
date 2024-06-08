@@ -1,0 +1,4 @@
+.terraform
+.terraform.lock.hcl
+outputs.txt
+*.tfstate

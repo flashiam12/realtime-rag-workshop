@@ -1,0 +1,59 @@
+1. General Sentiment:
+
+Overall, is the market sentiment towards [company name] positive, negative, or neutral?
+What are the main drivers of the current market sentiment?
+Has the sentiment towards [company name] changed significantly in recent weeks/months? If so, why?
+
+2. Product and Services:
+
+What are customers saying about [specific product/service]?
+Are there any emerging concerns or issues with [specific product/service]?
+How does the sentiment around [specific product/service] compare to competitors?
+
+3. Company Leadership and Strategy:
+
+What is the market's perception of the company's CEO and leadership team?
+Is the market optimistic or pessimistic about the company's future strategy?
+How does the market view the company's recent acquisitions/mergers?
+
+4. Financial Performance:
+
+How is the market reacting to the company's recent financial results?
+Are investors concerned about the company's debt levels or profitability?
+How does the market view the company's dividend policy?
+
+5. Competitive Landscape:
+
+How does the market sentiment towards [company name] compare to its key competitors?
+Are there any emerging threats from new competitors?
+What are the market's expectations for the company's future growth potential?
+
+6. Industry Trends:
+
+How does the overall sentiment towards the [industry] affect the sentiment towards [company name]?
+What are the main industry trends that are impacting the company's prospects?
+How does the market view the company's ability to adapt to these trends?
+
+7. Specific Events:
+
+How has the market sentiment towards [company name] been affected by [specific event]?
+What are the main concerns or opportunities associated with [specific event]?
+How has the company's response to [specific event] been received by the market?
+
+8. Social Media Sentiment:
+
+What are the most common themes discussed about [company name] on social media?
+What is the sentiment towards the company on specific social media platforms?
+Are there any influencers or key opinion leaders who are driving sentiment towards the company?
+
+9. Investor Sentiment:
+
+What are the key concerns and expectations of institutional investors regarding the company?
+Are investors optimistic about the company's future prospects?
+What are the key factors driving investor sentiment towards the company?
+
+10. Customer Sentiment:
+
+How satisfied are customers with the company's products and services?
+Are there any areas where the company can improve its customer service?
+How likely are customers to recommend the company to others?

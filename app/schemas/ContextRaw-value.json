@@ -1,0 +1,34 @@
+
+{ 
+    "$schema": "http://json-schema.org/draft-07/schema#", 
+    "title": "ContextRaw-value", 
+    "description": "Topic to collect raw knowledge", 
+    "type": "object", 
+    "properties": { 
+        "id": { 
+            "description": "Raw News id", 
+            "type": "string" 
+            }, 
+        "title": { 
+            "description": "Raw News title", 
+            "type": "string" 
+            }, 
+        "description": { 
+            "description": "Raw News description", 
+            "type": "string" 
+            }, 
+        "content": { 
+            "description": "Raw News content", 
+            "type": "string" 
+            }, 
+        "source": {
+             "description": "Raw News source", 
+             "type": "string" 
+            }, 
+        "published_at": { 
+            "description": "Raw News published_at", 
+            "type": "string" 
+            } 
+    }, 
+    "required": ["id", "title", "description", "content", "source", "published_at"] 
+}

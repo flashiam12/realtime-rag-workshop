@@ -1,0 +1,22 @@
+
+{ 
+    "$schema": "http://json-schema.org/draft-07/schema#", 
+    "title": "PromptRaw-value", 
+    "description": "Topic to collect prompt from frontend", 
+    "type": "object", 
+    "properties": { 
+        "id": { 
+            "description": "PromptRaw id", 
+            "type": "string" 
+            }, 
+        "prompt": { 
+            "description": "PromptRaw prompt", 
+            "type": "string" 
+            }, 
+        "timestamp": { 
+            "description": "PromptRaw timestamp", 
+            "type": "string" 
+            } 
+        }, 
+    "required": ["id", "prompt", "timestamp"] 
+}
