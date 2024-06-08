@@ -1,7 +1,7 @@
 #! /bin/bash 
 
-export TF_VAR_cc_cloud_api_key="2M4MYXKTKT37Z2YO"
-export TF_VAR_cc_cloud_api_secret="YOMoD38cnBj6+EyH4fCDaxYh7IyyfXQAZ2VY9EXxH4coNwiM02VdmA9bGwhDAbM/"
+export TF_VAR_cc_cloud_api_key="<Confluent Cloud API Key>"
+export TF_VAR_cc_cloud_api_secret="<Confluent Cloud API Secret>"
 
 cd confluent
 terraform init
