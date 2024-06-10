@@ -2,3 +2,4 @@
 .terraform.lock.hcl
 outputs.txt
 *.tfstate
+*.backup

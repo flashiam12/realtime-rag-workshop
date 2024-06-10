@@ -15,7 +15,10 @@
             }, 
         "knowledge_embedding": { 
             "description": "ContextEmbedding knowledge_embedding", 
-            "type": "string" 
+            "type": "array",
+            "items": {
+                "type":"number"
+            }
         }, 
         "published_at": { 
             "description": "ContextEmbedding published_at", 

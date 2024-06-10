@@ -4,6 +4,7 @@ resource "confluent_kafka_topic" "ContextRaw" {
   }
   topic_name         = "ContextRaw"
   rest_endpoint      = confluent_kafka_cluster.default.rest_endpoint
+  partitions_count   = 1
   credentials {
     key    = confluent_api_key.cluster-api-key.id
     secret = confluent_api_key.cluster-api-key.secret
@@ -20,6 +21,7 @@ resource "confluent_kafka_topic" "ContextEmbedding" {
   }
   topic_name         = "ContextEmbedding"
   rest_endpoint      = confluent_kafka_cluster.default.rest_endpoint
+  partitions_count   = 1
   credentials {
     key    = confluent_api_key.cluster-api-key.id
     secret = confluent_api_key.cluster-api-key.secret
@@ -36,6 +38,7 @@ resource "confluent_kafka_topic" "PromptRaw" {
   }
   topic_name         = "PromptRaw"
   rest_endpoint      = confluent_kafka_cluster.default.rest_endpoint
+  partitions_count   = 1
   credentials {
     key    = confluent_api_key.cluster-api-key.id
     secret = confluent_api_key.cluster-api-key.secret
@@ -52,6 +55,7 @@ resource "confluent_kafka_topic" "PromptContextIndex" {
   }
   topic_name         = "PromptContextIndex"
   rest_endpoint      = confluent_kafka_cluster.default.rest_endpoint
+  partitions_count   = 1
   credentials {
     key    = confluent_api_key.cluster-api-key.id
     secret = confluent_api_key.cluster-api-key.secret
@@ -68,6 +72,7 @@ resource "confluent_kafka_topic" "PromptEnriched" {
   }
   topic_name         = "PromptEnriched"
   rest_endpoint      = confluent_kafka_cluster.default.rest_endpoint
+  partitions_count   = 1
   credentials {
     key    = confluent_api_key.cluster-api-key.id
     secret = confluent_api_key.cluster-api-key.secret

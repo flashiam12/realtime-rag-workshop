@@ -1,9 +1,10 @@
-from ..utils.types import object_to_dict, TopicBase, dict_to_object_generator
+from ..utils.types import object_to_dict, TopicBase
 from confluent_kafka import Producer, Consumer
 from confluent_kafka.serialization import StringSerializer, SerializationContext, MessageField
 from confluent_kafka.schema_registry import SchemaRegistryClient
 from confluent_kafka.schema_registry.json_schema import JSONSerializer, JSONDeserializer
-
+import time
+import queue
 
 class KafkaProducer():
 
@@ -75,35 +76,42 @@ class KafkaConsumer():
                 kafka_api_secret: str, 
                 kafka_topic: str,
                 topic_value_sr_str: str, 
-                topic_value_sr_class: object
+                topic_value_sr_class: TopicBase
                 ) -> None:
         self.topic = kafka_topic
-        schema_registry_url = "https://"+ sr_user + ":" + sr_pass + "@" + sr_url
-        schema_registry_conf = {'url': schema_registry_url}
+        schema_registry_url = "https://"+sr_url
+        schema_registry_conf = {'url': schema_registry_url, 'basic.auth.user.info': sr_user+":"+sr_pass}
         self.schema_registry_client = SchemaRegistryClient(schema_registry_conf)
-        self.json_deserializer = JSONDeserializer(topic_value_sr_str, dict_to_object_generator(topic_value_sr_class), self.schema_registry_client)
-        consumer_conf = {
+        # self.json_deserializer = JSONDeserializer(topic_value_sr_str, dict_to_object_generator(topic_value_sr_class), self.schema_registry_client)
+        self.json_deserializer = JSONDeserializer(topic_value_sr_str, topic_value_sr_class.dict_to_object_generator)
+        self.consumer_conf = {
                             'bootstrap.servers': kafka_bootstrap,
                             'security.protocol': 'SASL_SSL',
                             'sasl.mechanisms': 'PLAIN',
                             'sasl.username': kafka_api_key,
                             'sasl.password': kafka_api_secret,
                             'group.id': kafka_topic+"-default-consumer",
-                            'auto.offset.reset': "latest"
+                            'auto.offset.reset': "earliest"
                         }
-        self.consumer = Consumer(consumer_conf)
+        
+    def poll_indefinately(self):
+        self.consumer = Consumer(self.consumer_conf)
         self.consumer.subscribe([self.topic])
-    
-    def poll_once(self):
-        message = self.consumer.poll(1.0)
-        message_obj = self.json_deserializer(message.value(), SerializationContext(message.topic(), MessageField.VALUE))
-        return message_obj
+        print(self.consumer)
+        while True:
+            try:
+                message = self.consumer.poll(1.0)
+                if message is not None:
+                    message_obj = self.json_deserializer(message.value(), SerializationContext(message.topic(), MessageField.VALUE))
+                    yield message_obj
+                    time.sleep(2)
+                else:
+                    continue
+            except ValueError as e:
+                print(e)
+            except Exception as e:
+                print(e)
         
     def close(self):
         self.consumer.close()
         return 
-        
-    
-
-    
-

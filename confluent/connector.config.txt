@@ -1,0 +1,514 @@
+MongoDbAtlasSink
+
+                         Config                         |             Documentation              | Required  
+--------------------------------------------------------+----------------------------------------+-----------
+  connection.host                                       | MongoDB Atlas connection host (e.g.    | true      
+                                                        | confluent-test.mycluster.mongodb.net). |           
+  connection.password                                   | MongoDB Atlas connection               | true      
+                                                        | password.                              |           
+  connection.user                                       | MongoDB Atlas connection user.         | true      
+  connector.class                                       | Connector class                        | true      
+  database                                              | MongoDB Atlas database name.           | true      
+  input.data.format                                     | Sets the input Kafka                   | true      
+                                                        | record value format. Valid             |           
+                                                        | entries are AVRO, JSON_SR,             |           
+                                                        | PROTOBUF, JSON, STRING or              |           
+                                                        | BSON. Note that you need to            |           
+                                                        | have Confluent Cloud Schema            |           
+                                                        | Registry configured if using           |           
+                                                        | a schema-based message format          |           
+                                                        | like AVRO, JSON_SR, and                |           
+                                                        | PROTOBUF.                              |           
+  name                                                  | Sets a name for your                   | true      
+                                                        | connector.                             |           
+  tasks.max                                             | Maximum number of tasks for            | true      
+                                                        | the connector.                         |           
+  topics                                                | Identifies the topic name or a         | true      
+                                                        | comma-separated list of topic          |           
+                                                        | names.                                 |           
+  bulk.write.ordered                                    | Whether the batches controlled         | false     
+                                                        | by 'max.batch.size' must               |           
+                                                        | be written via ordered bulk            |           
+                                                        | writes.                                |           
+  cdc.handler                                           | The class name of the CDC              | false     
+                                                        | handler to use for processing.         |           
+                                                        | You can capture CDC events             |           
+                                                        | with the MongoDB Kafka                 |           
+                                                        | sink connector and perform             |           
+                                                        | corresponding insert, update,          |           
+                                                        | and delete operations to a             |           
+                                                        | destination MongoDB cluster.           |           
+  collection                                            | Collection name to write to.           | false     
+                                                        | If the connector is sinking            |           
+                                                        | data from multiple topics,             |           
+                                                        | this is the default collection         |           
+                                                        | the topics are mapped to.              |           
+  delete.on.null.values                                 | Whether or not the connector           | false     
+                                                        | should try to delete documents         |           
+                                                        | based on key when value is             |           
+                                                        | null.                                  |           
+  doc.id.strategy                                       | The IdStrategy class name to           | false     
+                                                        | use for generating a unique            |           
+                                                        | document id (_id).                     |           
+  doc.id.strategy.overwrite.existing                    | Whether the connector should           | false     
+                                                        | overwrite existing values              |           
+                                                        | in the `_id` field when                |           
+                                                        | the strategy defined in                |           
+                                                        | doc.id.strategy is applied.            |           
+  document.id.strategy.uuid.format                      | The bson output format when            | false     
+                                                        | using the `UuidStrategy`.              |           
+                                                        | Can be either `String` or              |           
+                                                        | `Binary`.                              |           
+  kafka.api.key                                         | Kafka API Key. Required when           | false     
+                                                        | kafka.auth.mode==KAFKA_API_KEY.        |           
+  kafka.api.secret                                      | Secret associated with                 | false     
+                                                        | Kafka API key. Required when           |           
+                                                        | kafka.auth.mode==KAFKA_API_KEY.        |           
+  kafka.auth.mode                                       | Kafka Authentication mode. It          | false     
+                                                        | can be one of KAFKA_API_KEY or         |           
+                                                        | SERVICE_ACCOUNT. It defaults           |           
+                                                        | to KAFKA_API_KEY mode.                 |           
+  kafka.service.account.id                              | The Service Account that will          | false     
+                                                        | be used to generate the API            |           
+                                                        | keys to communicate with Kafka         |           
+                                                        | Cluster.                               |           
+  key.projection.list                                   | For use with the                       | false     
+                                                        | `PartialKeyStrategy`                   |           
+                                                        | allows custom key fields               |           
+                                                        | to be projected for the ID             |           
+                                                        | strategy. A comma-separated            |           
+                                                        | list of field names for key            |           
+                                                        | projection.                            |           
+  key.projection.type                                   | For use with the                       | false     
+                                                        | `PartialKeyStrategy` allows            |           
+                                                        | custom key fields to be                |           
+                                                        | projected for the ID strategy.         |           
+                                                        | Use either `AllowList` or              |           
+                                                        | `BlockList`.                           |           
+  max.batch.size                                        | The maximum number of sink             | false     
+                                                        | records to possibly batch              |           
+                                                        | together for processing.               |           
+  max.num.retries                                       | How many retries should be             | false     
+                                                        | attempted on write errors.             |           
+  max.poll.interval.ms                                  | The maximum delay between              | false     
+                                                        | subsequent consume requests            |           
+                                                        | to Kafka. This configuration           |           
+                                                        | property may be used to                |           
+                                                        | improve the performance                |           
+                                                        | of the connector, if the               |           
+                                                        | connector cannot send records          |           
+                                                        | to the sink system. Defaults           |           
+                                                        | to 300000 milliseconds (5              |           
+                                                        | minutes).                              |           
+  max.poll.records                                      | The maximum number of                  | false     
+                                                        | records to consume from                |           
+                                                        | Kafka in a single request.             |           
+                                                        | This configuration property            |           
+                                                        | may be used to improve the             |           
+                                                        | performance of the connector,          |           
+                                                        | if the connector cannot send           |           
+                                                        | records to the sink system.            |           
+                                                        | Defaults to 500 records.               |           
+  namespace.mapper.class                                | The class that determines the          | false     
+                                                        | namespace to write the sink            |           
+                                                        | data to. By default this will          |           
+                                                        | be based on the 'database'             |           
+                                                        | configuration and either the           |           
+                                                        | topic name or the 'collection'         |           
+                                                        | configuration.                         |           
+  namespace.mapper.error.if.invalid                     | Whether to throw an error if           | false     
+                                                        | the mapped field is missing or         |           
+                                                        | invalid. Defaults to false.            |           
+  namespace.mapper.key.collection.field                 | The key field to use as the            | false     
+                                                        | destination collection name.           |           
+  namespace.mapper.key.database.field                   | The key field to use as the            | false     
+                                                        | destination database name.             |           
+  namespace.mapper.value.collection.field               | The value field to use as the          | false     
+                                                        | destination collection name.           |           
+  namespace.mapper.value.database.field                 | The value field to use as the          | false     
+                                                        | destination database name.             |           
+  predicates                                            | Aliases for the predicates             | false     
+                                                        | used by transformations.               |           
+  rate.limiting.every.n                                 | The number of processed                | false     
+                                                        | batches that will trigger rate         |           
+                                                        | limiting. The default value of         |           
+                                                        | 0 sets no rate limiting.               |           
+  rate.limiting.timeout                                 | How long in ms processing              | false     
+                                                        | should wait before continuing          |           
+                                                        | after triggering a rate limit.         |           
+  retries.defer.timeout                                 | How long a retry should get            | false     
+                                                        | deferred.                              |           
+  schema.context.name                                   | Add a schema context name. A           | false     
+                                                        | schema context represents an           |           
+                                                        | independent scope in Schema            |           
+                                                        | Registry. It is a separate             |           
+                                                        | sub-schema tied to topics in           |           
+                                                        | different Kafka clusters that          |           
+                                                        | share the same Schema Registry         |           
+                                                        | instance. If not used, the             |           
+                                                        | connector uses the default             |           
+                                                        | schema configured for Schema           |           
+                                                        | Registry in your Confluent             |           
+                                                        | Cloud environment.                     |           
+  server.api.deprecation.errors                         | Sets whether the connector             | false     
+                                                        | requires use of deprecated             |           
+                                                        | server APIs to be reported as          |           
+                                                        | errors.                                |           
+  server.api.strict                                     | Sets whether the application           | false     
+                                                        | requires strict server API             |           
+                                                        | version enforcement.                   |           
+  server.api.version                                    | The server API version to use.         | false     
+                                                        | Disabled by default.                   |           
+  timeseries.expire.after.seconds                       | The amount of seconds the              | false     
+                                                        | data remains in MongoDB before         |           
+                                                        | MongoDB deletes it. Omitting           |           
+                                                        | this field means data will not         |           
+                                                        | be deleted automatically.              |           
+  timeseries.metafield                                  | The name of the top-level              | false     
+                                                        | field that contains metadata           |           
+                                                        | in each time series document.          |           
+                                                        | This field groups related              |           
+                                                        | data. It can be of any type            |           
+                                                        | except array.                          |           
+  timeseries.timefield                                  | The name of the top-level              | false     
+                                                        | field which contains the               |           
+                                                        | date in each time series               |           
+                                                        | document. Setting this config          |           
+                                                        | will create a time series              |           
+                                                        | collection where each document         |           
+                                                        | will have a BSON date as the           |           
+                                                        | value for the timefield.               |           
+  timeseries.timefield.auto.convert                     | Whether to convert the data            | false     
+                                                        | in the field into a BSON Date          |           
+                                                        | format. Supported formats              |           
+                                                        | include integer, long, and             |           
+                                                        | string.                                |           
+  timeseries.timefield.auto.convert.date.format         | The string pattern to convert          | false     
+                                                        | the source data from. The setting      |           
+                                                        | expects the string representation      |           
+                                                        | to contain both date and time          |           
+                                                        | information and uses the Java          |           
+                                                        | DateTimeFormatter.ofPattern(pattern,   |           
+                                                        | locale) API for the conversion.        |           
+                                                        | If the string only contains date       |           
+                                                        | information, then the time since       |           
+                                                        | epoch is from the start of that day.   |           
+                                                        | If a string representation does not    |           
+                                                        | contain time-zone offset, then the     |           
+                                                        | setting interprets the extracted       |           
+                                                        | date and time as UTC.                  |           
+  timeseries.timefield.auto.convert.locale.language.tag | The DateTimeFormatter locale           | false     
+                                                        | language tag to use with the           |           
+                                                        | date pattern.                          |           
+  transforms                                            | Aliases for the                        | false     
+                                                        | transformations to be applied          |           
+                                                        | to records.                            |           
+  ts.granularity                                        | The expected interval between          | false     
+                                                        | subsequent measurements for a          |           
+                                                        | time-series. Set this to None          |           
+                                                        | or leave it empty if the data          |           
+                                                        | is not time-series                     |           
+  value.projection.list                                 | For use with the                       | false     
+                                                        | `PartialValueStrategy`                 |           
+                                                        | allows custom value fields             |           
+                                                        | to be projected for the ID             |           
+                                                        | strategy. A comma-separated            |           
+                                                        | list of field names for value          |           
+                                                        | projection.                            |           
+  value.projection.type                                 | For use with the                       | false     
+                                                        | `PartialValueStrategy` allows          |           
+                                                        | custom value fields to be              |           
+                                                        | projected for the ID strategy.         |           
+                                                        | Use either `AllowList` or              |           
+                                                        | `BlockList`.                           |           
+  value.subject.name.strategy                           | Determines how to construct            | false     
+                                                        | the subject name under which           |           
+                                                        | the value schema is registered         |           
+                                                        | with Schema Registry.                  |           
+  write.strategy                                        | The class that specifies the           | false     
+                                                        | WriteModel to use for bulk             |           
+                                                        | writes.                                |           
+
+HttpSink
+
+              Config             |          Documentation          | Required  
+---------------------------------+---------------------------------+-----------
+  connector.class                | Connector class                 | true      
+  http.api.url                   | HTTP URL                        | true      
+  input.data.format              | Sets the input Kafka record     | true      
+                                 | value format. Valid entries     |           
+                                 | are AVRO, JSON_SR, PROTOBUF,    |           
+                                 | JSON or BYTES. Note that you    |           
+                                 | need to have Confluent Cloud    |           
+                                 | Schema Registry configured if   |           
+                                 | using a schema-based message    |           
+                                 | format like AVRO, JSON_SR, and  |           
+                                 | PROTOBUF.                       |           
+  name                           | Sets a name for your            | true      
+                                 | connector.                      |           
+  tasks.max                      | Maximum number of tasks for     | true      
+                                 | the connector.                  |           
+  topics                         | Identifies the topic name or a  | true      
+                                 | comma-separated list of topic   |           
+                                 | names.                          |           
+  auth.type                      | Endpoint Authentication type    | false     
+  batch.json.as.array            | Whether or not to use an array  | false     
+                                 | to bundle json records. Only    |           
+                                 | used when request.body.format   |           
+                                 | is set to json. This can        |           
+                                 | be disabled only when           |           
+                                 | batch.max.size is set to 1.     |           
+  batch.key.pattern              | Pattern used to build the       | false     
+                                 | key for a given batch. ${key}   |           
+                                 | and ${topic} can be used to     |           
+                                 | include message attributes      |           
+                                 | here                            |           
+  batch.max.size                 | The number of records           | false     
+                                 | accumulated in a batch before   |           
+                                 | the HTTP API is invoked         |           
+  batch.prefix                   | Prefix added to record          | false     
+                                 | batches. This is applied once   |           
+                                 | at the beginning of the batch   |           
+                                 | of records                      |           
+  batch.separator                | Separator for records in a      | false     
+                                 | batch                           |           
+  batch.suffix                   | Suffix added to record          | false     
+                                 | batches. This is applied once   |           
+                                 | at the end of the batch of      |           
+                                 | records                         |           
+  behavior.on.error              | Error handling behavior config  | false     
+                                 | for handling error responses    |           
+                                 | from HTTP requests              |           
+  behavior.on.null.values        | How to handle records with      | false     
+                                 | a non-null key and a null       |           
+                                 | value (i.e. Kafka tombstone     |           
+                                 | records). Valid options are     |           
+                                 | ``ignore``, ``delete`` and      |           
+                                 | ``fail``                        |           
+  connection.password            | The password to be used         | false     
+                                 | with an endpoint requiring      |           
+                                 | authentication                  |           
+  connection.user                | The username to be used         | false     
+                                 | with an endpoint requiring      |           
+                                 | authentication                  |           
+  header.separator               | Separator character used in     | false     
+                                 | headers                         |           
+  headers                        | HTTP headers to be included     | false     
+                                 | in all requests. Individual     |           
+                                 | headers should be separated by  |           
+                                 | the Header Separator            |           
+  http.connect.timeout.ms        | The time in milliseconds to     | false     
+                                 | wait for a connection to be     |           
+                                 | established                     |           
+  http.request.timeout.ms        | The time in milliseconds to     | false     
+                                 | wait for a request response     |           
+                                 | from the server                 |           
+  https.host.verifier.enabled    | True if SSL host verification   | false     
+                                 | should be enabled               |           
+  https.ssl.key.password         | The password of the private     | false     
+                                 | key in the key store file.      |           
+                                 | This is optional for client     |           
+  https.ssl.keystore.password    | The store password for          | false     
+                                 | the key store file. This        |           
+                                 | is optional for a client        |           
+                                 | and is only needed if           |           
+                                 | https.ssl.keystore.location is  |           
+                                 | configured                      |           
+  https.ssl.keystorefile         | The key store containing        | false     
+                                 | server certificate. Only        |           
+                                 | required if using https         |           
+  https.ssl.protocol             | The protocol to use for SSL     | false     
+                                 | connections                     |           
+  https.ssl.truststore.password  | The trust store password        | false     
+                                 | containing server CA            |           
+                                 | certificate. Only required if   |           
+                                 | using https                     |           
+  https.ssl.truststorefile       | The trust store containing      | false     
+                                 | server CA certificate. Only     |           
+                                 | required if using https         |           
+  kafka.api.key                  | Kafka API Key. Required when    | false     
+                                 | kafka.auth.mode==KAFKA_API_KEY. |           
+  kafka.api.secret               | Secret associated with          | false     
+                                 | Kafka API key. Required when    |           
+                                 | kafka.auth.mode==KAFKA_API_KEY. |           
+  kafka.auth.mode                | Kafka Authentication mode. It   | false     
+                                 | can be one of KAFKA_API_KEY or  |           
+                                 | SERVICE_ACCOUNT. It defaults    |           
+                                 | to KAFKA_API_KEY mode.          |           
+  kafka.service.account.id       | The Service Account that will   | false     
+                                 | be used to generate the API     |           
+                                 | keys to communicate with Kafka  |           
+                                 | Cluster.                        |           
+  max.poll.interval.ms           | The maximum delay between       | false     
+                                 | subsequent consume requests     |           
+                                 | to Kafka. This configuration    |           
+                                 | property may be used to         |           
+                                 | improve the performance         |           
+                                 | of the connector, if the        |           
+                                 | connector cannot send records   |           
+                                 | to the sink system. Defaults    |           
+                                 | to 300000 milliseconds (5       |           
+                                 | minutes).                       |           
+  max.poll.records               | The maximum number of           | false     
+                                 | records to consume from         |           
+                                 | Kafka in a single request.      |           
+                                 | This configuration property     |           
+                                 | may be used to improve the      |           
+                                 | performance of the connector,   |           
+                                 | if the connector cannot send    |           
+                                 | records to the sink system.     |           
+                                 | Defaults to 500 records.        |           
+  max.retries                    | The maximum number of times to  | false     
+                                 | retry on errors before failing  |           
+                                 | the task                        |           
+  oauth2.client.auth.mode        | Specifies how to encode         | false     
+                                 | ``client_id`` and               |           
+                                 | ``client_secret`` in the        |           
+                                 | OAuth2 authorization request.   |           
+                                 | If set to 'header', the         |           
+                                 | credentials are encoded         |           
+                                 | as an ``'Authorization:         |           
+                                 | Basic <base-64 encoded          |           
+                                 | client_id:client_secret>'``     |           
+                                 | HTTP header. If set to          |           
+                                 | 'url', then ``client_id`` and   |           
+                                 | ``client_secret`` are sent as   |           
+                                 | URL encoded parameters.         |           
+  oauth2.client.header.separator | Separator character used in     | false     
+                                 | OAuth2 Client Headers           |           
+  oauth2.client.headers          | HTTP headers to be included     | false     
+                                 | in the OAuth2 client endpoint.  |           
+                                 | Individual headers should be    |           
+                                 | separated by OAuth2 Client      |           
+                                 | Headers Separator               |           
+  oauth2.client.id               | The client id used when         | false     
+                                 | fetching OAuth2 token           |           
+  oauth2.client.scope            | The scope used when fetching    | false     
+                                 | OAuth2 token. If empty, this    |           
+                                 | parameter is not set in the     |           
+                                 | authorization request           |           
+  oauth2.client.secret           | The secret used when fetching   | false     
+                                 | OAuth2 token                    |           
+  oauth2.jwt.claimset            | JSON containing JWT claims      | false     
+  oauth2.jwt.enabled             | Whether to generate and add     | false     
+                                 | JWT token to request. If        |           
+                                 | selected, JWT token will be     |           
+                                 | added as 'jwt_token' request    |           
+                                 | param                           |           
+  oauth2.jwt.keystore.password   | Password to access keystore     | false     
+  oauth2.jwt.keystore.path       | Keystore containing private     | false     
+                                 | key to use to sign JWT.         |           
+  oauth2.jwt.keystore.type       | JWT keystore type               | false     
+  oauth2.token.property          | The name of the property        | false     
+                                 | containing the OAuth2 token     |           
+                                 | returned by the http proxy.     |           
+  oauth2.token.url               | The URL to be used for          | false     
+                                 | fetching OAuth2 token. Client   |           
+                                 | Credentials is the only         |           
+                                 | supported grant type.           |           
+  predicates                     | Aliases for the predicates      | false     
+                                 | used by transformations.        |           
+  regex.patterns                 | Regular expression patterns     | false     
+                                 | used for replacements in        |           
+                                 | the message sent to the         |           
+                                 | HTTP service. Multiple          |           
+                                 | regular expression patterns     |           
+                                 | can be specified, but           |           
+                                 | must be separated by            |           
+                                 | ``regex.separator``             |           
+  regex.replacements             | Regex replacements to           | false     
+                                 | use with the patterns in        |           
+                                 | ``regex.patterns``.  Multiple   |           
+                                 | replacements can be specified,  |           
+                                 | but must be separated           |           
+                                 | by ``regex.separator``.         |           
+                                 | ``${key}`` and ``${topic}``     |           
+                                 | can be used here.               |           
+  regex.separator                | Separator character used        | false     
+                                 | in ``regex.patterns`` and       |           
+                                 | ``regex.replacements``          |           
+                                 | property.                       |           
+  report.errors.as               | Dictates the content of         | false     
+                                 | records produced to the         |           
+                                 | error topic. If set to          |           
+                                 | ``error_string``, the value     |           
+                                 | would be a human readable       |           
+                                 | string describing the failure.  |           
+                                 | The value will include some     |           
+                                 | or all of the following         |           
+                                 | information if available: http  |           
+                                 | response code, reason phrase,   |           
+                                 | submitted payload, url,         |           
+                                 | response content, exception     |           
+                                 | and error message. If set to    |           
+                                 | ``http_response``, the value    |           
+                                 | would be the plain response     |           
+                                 | content for the request which   |           
+                                 | failed to write the record.     |           
+                                 | In both modes, any information  |           
+                                 | about the failure will also be  |           
+                                 | included in the error record's  |           
+                                 | headers                         |           
+  request.body.format            | Used to produce request body    | false     
+                                 | in either JSON or String        |           
+                                 | format                          |           
+  request.method                 | HTTP Request Method             | false     
+  retry.backoff.ms               | The initial duration in         | false     
+                                 | milliseconds to wait following  |           
+                                 | an error before a retry         |           
+                                 | attempt is made. Subsequent     |           
+                                 | backoff attempts will be        |           
+                                 | exponentially larger than the   |           
+                                 | first duration. Note that this  |           
+                                 | value is the initial backoff    |           
+                                 | before retrying. After that,    |           
+                                 | the connector will retry        |           
+                                 | using exponential jitter.       |           
+                                 | Jitter adds randomness to the   |           
+                                 | exponential backoff algorithm   |           
+                                 | to prevent synchronized         |           
+                                 | retries.                        |           
+  retry.backoff.policy           | The backoff policy to           | false     
+                                 | use in terms of retry           |           
+                                 | - CONSTANT_VALUE or             |           
+                                 | EXPONENTIAL_WITH_JITTER         |           
+  retry.on.status.codes          | The HTTP error codes to         | false     
+                                 | retry on. Comma-separated       |           
+                                 | list of codes or range of       |           
+                                 | codes to retry on. Ranges       |           
+                                 | are specified with start        |           
+                                 | and optional end code. Range    |           
+                                 | boundaries are inclusive.       |           
+                                 | For instance, '400-' includes   |           
+                                 | all codes greater than or       |           
+                                 | equal to 400. '400-500'         |           
+                                 | includes codes from 400 to      |           
+                                 | 500, including 500. Multiple    |           
+                                 | ranges and single codes can be  |           
+                                 | specified together to achieve   |           
+                                 | fine grained control over       |           
+                                 | retry behavior. For example,    |           
+                                 | '404,408,500-' will retry on    |           
+                                 | 404 NOT FOUND, 408 REQUEST      |           
+                                 | TIMEOUT, and all 5xx error      |           
+                                 | codes                           |           
+  schema.context.name            | Add a schema context name. A    | false     
+                                 | schema context represents an    |           
+                                 | independent scope in Schema     |           
+                                 | Registry. It is a separate      |           
+                                 | sub-schema tied to topics in    |           
+                                 | different Kafka clusters that   |           
+                                 | share the same Schema Registry  |           
+                                 | instance. If not used, the      |           
+                                 | connector uses the default      |           
+                                 | schema configured for Schema    |           
+                                 | Registry in your Confluent      |           
+                                 | Cloud environment.              |           
+  sensitive.headers              | Sensitive HTTP headers (eg:     | false     
+                                 | credentials) to be included     |           
+                                 | in all requests. Individual     |           
+                                 | headers should be separated by  |           
+                                 | the Header Separator            |           
+  transforms                     | Aliases for the                 | false     
+                                 | transformations to be applied   |           
+                                 | to records.                     |           
