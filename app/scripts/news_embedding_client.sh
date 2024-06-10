@@ -2,6 +2,7 @@
 
 source .venv/bin/activate
 
+export OPENAI_APIKEY="<OpenAI API Key - https://platform.openai.com/api-keys>"
 export CC_KAFKA_RAW_NEWS_TOPIC="<Refer Confluent Setup - outputs.txt>"
 export CC_KAFKA_EMBEDDING_NEWS_TOPIC="<Refer Confluent Setup - outputs.txt>"
 export CC_CLUSTER_KAFKA_URL="<Refer Confluent Setup - outputs.txt>"
