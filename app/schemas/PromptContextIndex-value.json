@@ -15,7 +15,10 @@
             }, 
         "context_indexes": { 
             "description": "PromptContextIndex context_indexes", 
-            "type": "string" 
+            "type": "array",
+            "items": {
+                "type": "string"
+            } 
         }, 
         "timestamp": { 
             "description": "PromptContextIndex timestamp", 

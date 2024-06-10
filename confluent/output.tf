@@ -36,6 +36,8 @@ resource "null_resource" "default_output" {
       echo "MONGO_DATABASE_USER='${local.mongo_workshop_database_user}'" >> outputs.txt
       echo "MONGO_DATABASE_PASSWORD='${local.mongo_workshop_database_pass}'" >> outputs.txt
       echo "MONGO_DATABASE_INDEX='${local.mongo_workshop_database_index}'" >> outputs.txt
+      echo "MONGO_DATABASE='${local.mongo_workshop_database}'" >> outputs.txt
+      echo "MONGO_COLLECTION='${local.mongo_workshop_database_collection}'" >> outputs.txt
       echo "" >> outputs.txt
       echo "# External APIs" >> outputs.txt
       echo "OPENAI_APIKEY='${var.openai_api_key}'" >> outputs.txt

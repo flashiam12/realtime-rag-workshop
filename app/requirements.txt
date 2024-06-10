@@ -1,4 +1,5 @@
 confluent-kafka
+pymongo
 httpx
 jsonschema
 requests

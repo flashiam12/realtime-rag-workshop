@@ -27,6 +27,7 @@ variable "mongodbatlas_public_key" {}
 variable "mongodbatlas_private_key" {}
 variable "openai_api_key" {}
 variable "newsapi_api_key" {}
+variable "company_of_interest" {}
 
 data "http" "myip" {
   url = "https://ipv4.icanhazip.com"

@@ -4,7 +4,6 @@ from confluent_kafka.serialization import StringSerializer, SerializationContext
 from confluent_kafka.schema_registry import SchemaRegistryClient
 from confluent_kafka.schema_registry.json_schema import JSONSerializer, JSONDeserializer
 import time
-import queue
 
 class KafkaProducer():
 
@@ -82,7 +81,6 @@ class KafkaConsumer():
         schema_registry_url = "https://"+sr_url
         schema_registry_conf = {'url': schema_registry_url, 'basic.auth.user.info': sr_user+":"+sr_pass}
         self.schema_registry_client = SchemaRegistryClient(schema_registry_conf)
-        # self.json_deserializer = JSONDeserializer(topic_value_sr_str, dict_to_object_generator(topic_value_sr_class), self.schema_registry_client)
         self.json_deserializer = JSONDeserializer(topic_value_sr_str, topic_value_sr_class.dict_to_object_generator)
         self.consumer_conf = {
                             'bootstrap.servers': kafka_bootstrap,
@@ -104,7 +102,7 @@ class KafkaConsumer():
                 if message is not None:
                     message_obj = self.json_deserializer(message.value(), SerializationContext(message.topic(), MessageField.VALUE))
                     yield message_obj
-                    time.sleep(2)
+                    time.sleep(1)
                 else:
                     continue
             except ValueError as e:
@@ -112,6 +110,44 @@ class KafkaConsumer():
             except Exception as e:
                 print(e)
         
+    def close(self):
+        self.consumer.close()
+        return 
+        
+class BasicKafkaConsumer():
+    def __init__(self, 
+                kafka_bootstrap: str, 
+                kafka_api_key: str,
+                kafka_api_secret: str, 
+                kafka_topic: str
+                ) -> None:
+        self.topic = kafka_topic
+        self.consumer_conf = {
+                    'bootstrap.servers': kafka_bootstrap,
+                    'security.protocol': 'SASL_SSL',
+                    'sasl.mechanisms': 'PLAIN',
+                    'sasl.username': kafka_api_key,
+                    'sasl.password': kafka_api_secret,
+                    'group.id': kafka_topic+"-default-consumer",
+                    'auto.offset.reset': "earliest"
+                }
+        
+    def poll_indefinately(self):
+        self.consumer = Consumer(self.consumer_conf)
+        self.consumer.subscribe([self.topic])
+        while True:
+            try:
+                message = self.consumer.poll(1.0)
+                if message is not None:
+                    yield message
+                    time.sleep(2)
+                else:
+                    continue
+            except ValueError as e:
+                print(e)
+            except Exception as e:
+                print(e)
+
     def close(self):
         self.consumer.close()
         return 

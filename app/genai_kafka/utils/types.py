@@ -54,10 +54,19 @@ class PromptRaw(TopicBase):
         self.prompt = prompt
         self.timestamp = timestamp
         super().__init__(id)
-
+    
+    @staticmethod
+    def dict_to_object_generator(obj:Dict, ctx):
+        if obj is None:
+            return None
+        return PromptRaw(
+                        id=obj.get("id"),
+                        prompt=obj.get("prompt"),
+                        timestamp=obj.get("timestamp")
+                        )
     
 class PromptContextIndex(TopicBase):
-    def __init__(self, id:str, prompt:str, context_indexes:str, timestamp: str) -> None:
+    def __init__(self, id:str, prompt:str, context_indexes:List[str], timestamp: str) -> None:
         self.prompt = prompt
         self.context_indexes = context_indexes
         self.timestamp = timestamp
