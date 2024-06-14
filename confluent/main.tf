@@ -16,6 +16,22 @@ provider "confluent" {
     cloud_api_secret = var.cc_cloud_api_secret
 }
 
+# provider "confluent" {
+#   alias = "cluster"
+#   kafka_api_key = confluent_api_key.cluster-api-key.id
+#   kafka_api_secret = confluent_api_key.cluster-api-key.secret
+#   kafka_id = confluent_kafka_cluster.default.id
+#   kafka_rest_endpoint = confluent_kafka_cluster.default.rest_endpoint
+# }
+
+# provider "confluent" {
+#   alias = "schema"
+#   schema_registry_api_key = confluent_api_key.schema-registry-api-key.id
+#   schema_registry_api_secret = confluent_api_key.schema-registry-api-key.secret
+#   schema_registry_id = confluent_schema_registry_cluster.default.id
+#   schema_registry_rest_endpoint = confluent_schema_registry_cluster.default.id
+# }
+
 provider "mongodbatlas" {
   public_key = var.mongodbatlas_public_key
   private_key  = var.mongodbatlas_private_key

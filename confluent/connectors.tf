@@ -62,10 +62,10 @@ resource "confluent_connector" "http-sink" {
   config_nonsensitive = {
     "connector.class" = "HttpSink"
     "http.api.url" = "https://api.openai.com/v1/chat/completions"
-    "input.data.format" = "JSON_SR"
+    "input.data.format" = "AVRO"
     "name" = "generation-llm-api-sink"
     "tasks.max" = 1
-    "topics" = confluent_kafka_topic.PromptEnriched.topic_name
+    "topics" = "PromptEnriched"
     "auth.type":"NONE"
     "headers": "Content-Type: application/json"
     "header.separator": ","
@@ -76,13 +76,16 @@ resource "confluent_connector" "http-sink" {
     "kafka.auth.mode": "KAFKA_API_KEY"
     "request.body.format": "json"
     "request.method": "POST"
+    "value.converter": "io.confluent.connect.avro.AvroConverter"
+    "key.converter": "io.confluent.connect.avro.AvroConverter"
   }
 
   depends_on = [
     confluent_role_binding.cluster-admin,
     confluent_role_binding.topic-write,
     confluent_role_binding.topic-read,
-    confluent_role_binding.schema-read
+    confluent_role_binding.schema-read,
+    confluent_flink_statement.PromptEnriched
   ]
 
   lifecycle {

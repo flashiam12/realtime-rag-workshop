@@ -3,7 +3,7 @@
 Overall, is the market sentiment towards [company name] positive, negative, or neutral?
 Overall, is the market sentiment towards nvidia positive, negative, or neutral?
 What are the main drivers of the current market sentiment for nvidia?
-Has the sentiment towards nvidia changed significantly in recent weeks/months? If so, why?
+Has the sentiment towards amazon changed significantly in recent weeks/months? If so, why?
 
 2. Product and Services:
 

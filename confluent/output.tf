@@ -19,7 +19,7 @@ resource "null_resource" "default_output" {
       echo "CC_KAFKA_EMBEDDING_NEWS_TOPIC='${confluent_kafka_topic.ContextEmbedding.topic_name}'" >> outputs.txt
       echo "CC_KAFKA_RAW_PROMPT_TOPIC='${confluent_kafka_topic.PromptRaw.topic_name}'" >> outputs.txt
       echo "CC_KAFKA_PROMPT_CONTEXTINDEX_TOPIC='${confluent_kafka_topic.PromptContextIndex.topic_name}'" >> outputs.txt
-      echo "CC_KAFKA_PROMPT_ENRICHED_TOPIC='${confluent_kafka_topic.PromptEnriched.topic_name}'" >> outputs.txt
+      echo "CC_KAFKA_PROMPT_ENRICHED_TOPIC='PromptEnriched'" >> outputs.txt
       echo "" >> outputs.txt
       echo "# Confluent Schema Registry" >> outputs.txt
       echo "CC_CLUSTER_SR_URL='${replace(confluent_schema_registry_cluster.default.rest_endpoint, "https://", "")}'" >> outputs.txt

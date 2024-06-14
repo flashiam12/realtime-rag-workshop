@@ -66,19 +66,19 @@ resource "confluent_kafka_topic" "PromptContextIndex" {
   }
 }
 
-resource "confluent_kafka_topic" "PromptEnriched" {
-  kafka_cluster {
-    id = confluent_kafka_cluster.default.id
-  }
-  topic_name         = "PromptEnriched"
-  rest_endpoint      = confluent_kafka_cluster.default.rest_endpoint
-  partitions_count   = 1
-  credentials {
-    key    = confluent_api_key.cluster-api-key.id
-    secret = confluent_api_key.cluster-api-key.secret
-  }
+# resource "confluent_kafka_topic" "PromptEnriched" {
+#   kafka_cluster {
+#     id = confluent_kafka_cluster.default.id
+#   }
+#   topic_name         = "PromptEnriched"
+#   rest_endpoint      = confluent_kafka_cluster.default.rest_endpoint
+#   partitions_count   = 1
+#   credentials {
+#     key    = confluent_api_key.cluster-api-key.id
+#     secret = confluent_api_key.cluster-api-key.secret
+#   }
 
-  lifecycle {
-    prevent_destroy = false
-  }
-}
+#   lifecycle {
+#     prevent_destroy = false
+#   }
+# }

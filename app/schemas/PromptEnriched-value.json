@@ -1,26 +1,35 @@
-
-{ 
-    "$schema": "http://json-schema.org/draft-07/schema#", 
-    "title": "PromptEnriched", 
-    "description": "Topic to collect enriched prompt with context", 
-    "type": "object", 
-    "properties": { 
-        "id": { 
-            "description": "PromptEnriched id", 
-            "type": "string" 
-            }, 
-        "messages": { 
-            "description": "PromptEnriched messages", 
-            "type": "string" 
-            }, 
-        "model": { 
-            "description": "PromptEnriched model", 
-            "type": "string" 
-            }, 
-        "temperature": { 
-            "description": "PromptEnriched temperature", 
-            "type": "number" 
-            } 
-        }, 
-    "required": ["id", "messages", "model", "temperature"] 
+{
+    "$schema": "http://json-schema.org/draft-07/schema#",
+    "title": "PromptEnriched",
+    "name": "PromptEnriched",
+    "description": "Topic to collect enriched prompt with context",
+    "type": "object",
+    "properties": {
+      "temperature": {
+        "type": "number",
+        "description": "PromptEnriched messages"
+      },
+      "model": {
+        "type": "string",
+        "description": "PromptEnriched model"
+      },
+      "messages": {
+        "type": "array",
+        "description": "PromptEnriched messages",
+        "items": {
+          "type": "object",
+          "title": "org.apache.flink.avro.generated.record_messages",
+          "properties": {
+            "role": {
+              "type": "string"
+            },
+            "content": {
+              "type": "string"
+            }
+          },
+          "required": ["role", "content"]
+        }
+      }
+    },
+    "required": ["temperature", "model", "messages"]
 }
