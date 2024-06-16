@@ -15,6 +15,7 @@ def response_collector():
                                         kafka_topic=FRONTEND_PROMPT_ANSWER_TOPIC
                                        )
     for message in kafka_consumer.poll_indefinately():
+        # print("poll started")
         if message != {}:
             print("")
             print("")

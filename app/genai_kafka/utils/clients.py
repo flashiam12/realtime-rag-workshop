@@ -130,7 +130,7 @@ class BasicKafkaConsumer():
                     'sasl.username': kafka_api_key,
                     'sasl.password': kafka_api_secret,
                     'group.id': kafka_topic+"-default-consumer",
-                    'auto.offset.reset': "latest",
+                    'auto.offset.reset': "earliest",
                     'enable.auto.commit': "false"
                 }
         
@@ -144,11 +144,13 @@ class BasicKafkaConsumer():
             try:
                 message = self.consumer.poll(1.0)
                 if message is not None:
+                    # print("message is not none")
                     if self.key == message.key() or self.key == None:
                         self.key = message.key()
                         self.message = json.loads(json.loads(message.value().decode()))
-                        if self.message.get("usage", {}).get("total_tokens", 0) >= self.previous_message.get("usage", {}).get("total_tokens", 0):
+                        if self.message.get("usage", {}).get("completion_tokens", 0) >= self.previous_message.get("usage", {}).get("completion_tokens", 0):
                             self.previous_message = self.message
+                            # print(self.message)
                             
                 else:
                     if self.key is None:

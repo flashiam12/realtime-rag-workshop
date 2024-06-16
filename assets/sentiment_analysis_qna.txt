@@ -45,7 +45,7 @@ How has the company's response to [specific event] been received by the market?
 
 What are the most common themes discussed about [company name] on social media?
 What is the sentiment towards the company on specific social media platforms?
-Are there any influencers or key opinion leaders who are driving sentiment towards the company?
+Are there any influencers or key opinion leaders who are driving sentiment towards nvidia?
 
 9. Investor Sentiment:
 
