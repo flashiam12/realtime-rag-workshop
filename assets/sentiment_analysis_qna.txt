@@ -2,8 +2,8 @@
 
 Overall, is the market sentiment towards [company name] positive, negative, or neutral?
 Overall, is the market sentiment towards nvidia positive, negative, or neutral?
-What are the main drivers of the current market sentiment for nvidia?
-Has the sentiment towards amazon changed significantly in recent weeks/months? If so, why?
+ 
+Has the sentiment towards nvidia changed significantly in recent weeks/months? If so, why?
 
 2. Product and Services:
 
@@ -13,14 +13,14 @@ How does the sentiment around [specific product/service] compare to competitors?
 
 3. Company Leadership and Strategy:
 
-What is the market's perception of the company's CEO and leadership team?
-Is the market optimistic or pessimistic about the company's future strategy?
-How does the market view the company's recent acquisitions/mergers?
+What is the market's perception of Amazon's CEO and leadership team?
+Is the market optimistic or pessimistic about nvidia's future strategy?
+How does the market view the amazon's recent acquisitions/mergers?
 
 4. Financial Performance:
 
-How is the market reacting to the company's recent financial results?
-Are investors concerned about the company's debt levels or profitability?
+How is the market reacting to the nvidia's recent financial results?
+Are investors concerned about the amazon's debt levels or profitability?
 How does the market view the company's dividend policy?
 
 5. Competitive Landscape:

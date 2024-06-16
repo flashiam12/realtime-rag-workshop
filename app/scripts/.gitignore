@@ -2,3 +2,4 @@
 ./market_news_scrapper.sh
 ./news_embedding_client.sh
 ./prompt_embedding_client.sh
+./*.sh

@@ -65,7 +65,7 @@ resource "confluent_connector" "http-sink" {
     "input.data.format" = "AVRO"
     "name" = "generation-llm-api-sink"
     "tasks.max" = 1
-    "topics" = "PromptEnriched"
+    "topics" = "PromptContext"
     "auth.type":"NONE"
     "headers": "Content-Type: application/json"
     "header.separator": ","
@@ -78,6 +78,13 @@ resource "confluent_connector" "http-sink" {
     "request.method": "POST"
     "value.converter": "io.confluent.connect.avro.AvroConverter"
     "key.converter": "io.confluent.connect.avro.AvroConverter"
+    "http.connect.timeout.ms": "60000"
+    "http.request.timeout.ms": "120000"
+    "retry.backoff.ms": "10000"
+    "max.retries": 5
+    "retry.on.status.codes": "500-"
+    "batch.json.as.array": false
+    "batch.max.size": 1
   }
 
   depends_on = [
@@ -85,7 +92,7 @@ resource "confluent_connector" "http-sink" {
     confluent_role_binding.topic-write,
     confluent_role_binding.topic-read,
     confluent_role_binding.schema-read,
-    confluent_flink_statement.PromptEnriched
+    confluent_flink_statement.PromptContext
   ]
 
   lifecycle {

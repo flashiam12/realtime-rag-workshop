@@ -1,9 +1,10 @@
 from ..utils.types import object_to_dict, TopicBase
-from confluent_kafka import Producer, Consumer
+from confluent_kafka import Producer, Consumer, TopicPartition
 from confluent_kafka.serialization import StringSerializer, SerializationContext, MessageField
 from confluent_kafka.schema_registry import SchemaRegistryClient
 from confluent_kafka.schema_registry.json_schema import JSONSerializer, JSONDeserializer
 import time
+import json
 
 class KafkaProducer():
 
@@ -129,24 +130,50 @@ class BasicKafkaConsumer():
                     'sasl.username': kafka_api_key,
                     'sasl.password': kafka_api_secret,
                     'group.id': kafka_topic+"-default-consumer",
-                    'auto.offset.reset': "earliest"
+                    'auto.offset.reset': "latest",
+                    'enable.auto.commit': "false"
                 }
         
     def poll_indefinately(self):
         self.consumer = Consumer(self.consumer_conf)
         self.consumer.subscribe([self.topic])
+        self.message = {}
+        self.previous_message = {}
+        self.key = None
         while True:
             try:
                 message = self.consumer.poll(1.0)
                 if message is not None:
-                    yield message
-                    time.sleep(2)
+                    if self.key == message.key() or self.key == None:
+                        self.key = message.key()
+                        self.message = json.loads(json.loads(message.value().decode()))
+                        if self.message.get("usage", {}).get("total_tokens", 0) >= self.previous_message.get("usage", {}).get("total_tokens", 0):
+                            self.previous_message = self.message
+                            
                 else:
-                    continue
+                    if self.key is None:
+                        continue
+                    else:
+                        yield self.previous_message
+                        partitions = self.consumer.assignment()
+                        offsets_to_commit = []
+                        for partition in partitions:
+                            offset = self.consumer.position([partition])[0].offset
+                            offsets_to_commit.append(TopicPartition(partition.topic, partition.partition, offset))
+                        self.consumer.commit(offsets=offsets_to_commit)
+                        self.consumer.close()
+                        print("")
+                        print("Total Tokens:", self.previous_message.get("usage", {}).get("total_tokens", 0))
+                        return
+
             except ValueError as e:
                 print(e)
+                break
+                
             except Exception as e:
                 print(e)
+                break
+        return
 
     def close(self):
         self.consumer.close()

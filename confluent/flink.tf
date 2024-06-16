@@ -11,12 +11,6 @@ resource "confluent_role_binding" "environment-admin" {
   crn_pattern = confluent_environment.default.resource_name
 }
 
-resource "confluent_role_binding" "flink-developer" {
-  principal   = "User:${confluent_service_account.default.id}"
-  role_name   = "FlinkDeveloper"
-  crn_pattern = confluent_flink_compute_pool.default.resource_name
-}
-
 resource "confluent_flink_compute_pool" "default" {
   display_name     = "sentiment_analysis_pipeline_pool"
   cloud            = "AWS"
@@ -53,7 +47,7 @@ resource "confluent_api_key" "flink-default" {
   depends_on = [ confluent_role_binding.environment-admin ]
 }
 
-resource "confluent_flink_statement" "PromptEnriched" {
+resource "confluent_flink_statement" "PromptContext" {
   organization {
     id = data.confluent_organization.default.id
   }
