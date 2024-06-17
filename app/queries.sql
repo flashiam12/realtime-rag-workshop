@@ -15,8 +15,8 @@ SELECT
             p.id as id,
             p.prompt as prompt,
             ARRAY_AGG(DISTINCT c.description) AS description,
-            ARRAY_AGG(DISTINCT c.description) AS title,
-            ARRAY_AGG(DISTINCT c.description) AS content
+            ARRAY_AGG(DISTINCT c.title) AS title,
+            ARRAY_AGG(DISTINCT c.content) AS content
         FROM 
             ContextRaw AS c
         INNER JOIN 
