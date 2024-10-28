@@ -238,16 +238,33 @@ CROSS JOIN UNNEST(context_indexes) AS context_index;
 ```
 <p>Here, the statement "UNNEST" is responsible for exploding the array, while CROSS JOIN is responsible to create a join with the parent table and the table which only has a Coloumn called "context_index"</p>
 
-<p>2. In the flink shell, run the query to lookup against the text columns in raw context and aggregate the rows where there is matching index id from the prompt context exploded table.</p>
+<p>2. In the flink shell, run the query to create a join table which stores joined context data and prompt data</p>
 
 ```sql
+CREATE TABLE prompt_context_join
+(
+ prompt_key BYTES,
+  id STRING,
+  prompt STRING,
+  `description` STRING,
+  title STRING,
+  content STRING,
+  `timestamp` TIMESTAMP(3),
+    WATERMARK FOR `timestamp` AS `timestamp` 
+);
+```
+<p>3. In the flink shell, run the query to lookup against the text columns in raw context (ContextRaw) and PromptContextIndex  and join the rows where there is matching index id from the prompt context exploded table and raw context table.</p>
+
+```sql
+INSERT INTO prompt_context_join
 SELECT 
     p.prompt_key as prompt_key,
     p.id as id,
     p.prompt as prompt,
-    ARRAY_AGG(DISTINCT c.description) AS description,
-    ARRAY_AGG(DISTINCT c.title) AS title,
-    ARRAY_AGG(DISTINCT c.content) AS content
+    c.description AS description,
+    c.title AS title,
+    c.content AS content,
+    now () as `timestamp`
 FROM 
     ContextRaw AS c
 INNER JOIN 
@@ -260,133 +277,149 @@ INNER JOIN
         FROM PromptContextIndex CROSS JOIN UNNEST(context_indexes) AS context_index
     ) AS p
 ON 
-    c.id = p.context_index
-GROUP BY 
-    p.prompt_key,
-    p.prompt,
-    p.id;
+    c.id = p.context_index;
 ```
-<p>Here, the ARRAY_AGG function collects the title, content and description column from the raw context table where there is a match with context index ids from prompt context table. Please note, this is a time sensitive operation. Also, this operation require efficient state management for collection of these columns in-memory before emitting the results for all matched indexes.</p>
+<p>Here, timestamp` is added to a watermark column which will be later used for bounded stateful operations to perform streaming aggregations.</p>
 
-<p>3. In the flink shell, collect all the information together from raw context table into a single array along with prompt and prompt id</p>
+<p>4. In the flink shell, create a enhanced_prompt_context_join table which will store the aggregated results(similar matched contextes) for each unique prompt</p>
 
 ```sql
+CREATE TABLE enhanced_prompt_context_join
+(
+ prompt_key BYTES,
+  id STRING,
+  prompt STRING,
+  `description` STRING,
+  title STRING,
+  content STRING,
+  `timestamp` TIMESTAMP(3),
+    WATERMARK FOR `timestamp` AS `timestamp` 
+);
+```
+
+
+```sql
+INSERT into enhanced_prompt_context_join
 SELECT 
-    ARRAY_CONCAT(title, content, description) as messages,
-    id,
-    prompt
+        prompt_key, 
+        id, 
+        prompt,
+        LISTAGG(`description`,'\n') OVER(
+        PARTITION BY prompt_key,id,prompt
+        ORDER BY `timestamp`
+  RANGE BETWEEN INTERVAL '1' HOUR PRECEDING AND CURRENT ROW
+    ) AS `description`,
+        LISTAGG(title,'\n') OVER(
+        PARTITION BY prompt_key,id,prompt
+        ORDER BY `timestamp`
+  RANGE BETWEEN INTERVAL '1' HOUR PRECEDING AND CURRENT ROW
+    ) AS title,
+        LISTAGG(content,'\n') OVER(
+        PARTITION BY prompt_key,id,prompt
+        ORDER BY `timestamp`
+  RANGE BETWEEN INTERVAL '1' HOUR PRECEDING AND CURRENT ROW
+    ) AS content,
+     now () as `timestamp`
+    FROM prompt_context_join;
+```
+
+<p>Here, the function LISTAGG will collect all the aggregated arrays created while inner join in previous step into one single array.This query aggregates related descriptions, titles, and content for each prompt within a one-hour timeframe, merging them into single fields for each unique prompt entry. It enhances prompt context by providing consolidated, recent information in a structured format to enrich responses. </p>
+
+
+<p>For ex : A query with 4 matched indexes creates 4 unnested values with it's context data in the previous query and the description , title and content are concatened for every row with previous rows within one hour timeframe generating 4 rows , where the last row for each unique prompt would consist the entire knowledge on the given prompt question. </p>
+
+
+<p>The next task is to filter out the last aggregated for each unique prompt with the entire knowledge.</p>
+
+<p>5. In the flink sql shell, create a table knowledge_infused_prompt which will contain the entire knowledge for a prompt </p>
+
+```sql
+CREATE TABLE knowledge_infused_prompt
+(
+ prompt_key BYTES,
+ id STRING,
+ prompt STRING,
+ similar_descriptions STRING,
+ similar_titles STRING,
+ similar_content STRING,
+ row_num BIGINT NOT NULL
+);
+```
+
+<p>5. In the flink sql shell, create a tumbling window with row num partitioned by unique prompt and order it by desc and select the latest record with entire context data</p>
+
+```sql
+INSERT INTO `knowledge_infused_prompt`
+SELECT `prompt_key`,`id`, `prompt`, `description`, `title`, `content` , `row_num`
 FROM (
-    SELECT 
-        p.prompt_key as prompt_key,
-        p.id as id,
-        p.prompt as prompt,
-        ARRAY_AGG(DISTINCT c.description) AS description,
-        ARRAY_AGG(DISTINCT c.title) AS title,
-        ARRAY_AGG(DISTINCT c.content) AS content
-    FROM 
-        ContextRaw AS c
-    INNER JOIN 
-        (
-        SELECT 
-            key AS prompt_key, 
-            id, 
-            prompt, 
-            context_index 
-            FROM PromptContextIndex CROSS JOIN UNNEST(context_indexes) AS context_index
-        ) AS p
-    ON 
-        c.id = p.context_index
-    GROUP BY 
-        p.prompt_key,
-        p.prompt,
-        p.id
-    )
-GROUP BY 
-    prompt_key,
-    id,
-    prompt,
-    title,
-    description, 
-    content;
+    SELECT *,
+           ROW_NUMBER() OVER (PARTITION BY window_start, window_end, `id`, `prompt`, `prompt_key` ORDER BY `timestamp` DESC) AS row_num
+    FROM TABLE(TUMBLE(TABLE `confluent_workshop`.`sentiment_analysis`.`enhanced_prompt_context_join`, DESCRIPTOR(`timestamp`), INTERVAL '10' SECOND))
+)
+where row_num<=1;
 ```
-<p>Here, the function ARRAY_CONCAT will collect all the aggregated arrays created while inner join in previous step into one single array. Hence, this is can be considered the entire knowledge on the given prompt question. </p>
-
-<p>4. In the flink sql shell, check the defination of prompt enriched table as this would be the one table interfacing the external GenAI provider via Kafka messaging layer. </p>
-
-```sql
-DESCRIBE `<CC_KAFKA_PROMPT_ENRICHED_TOPIC>`;
-```
-
-<p>5. In the flink sql shell, first lets check the final output for the above table and then do the INSERT into it. </p>
-
-```sql
-SELECT 
-    id AS id, 
-    CAST(0.5 AS DOUBLE) AS temperature,
-    CAST('gpt-3.5-turbo' AS STRING) AS `model`,
-    ARRAY[ROW(CAST('user' AS STRING), CAST(CONCAT('Answer the question based on the given information: Q - ', prompt, 'Information - ', CAST(messages AS STRING)) AS STRING))] AS messages 
-FROM (
-    SELECT 
-        ARRAY_CONCAT(title, content, description) as messages,
-        id,
-        prompt
-        FROM (
-            SELECT 
-                p.prompt_key as prompt_key,
-                p.id as id,
-                p.prompt as prompt,
-                ARRAY_AGG(DISTINCT c.description) AS description,
-                ARRAY_AGG(DISTINCT c.title) AS title,
-                ARRAY_AGG(DISTINCT c.content) AS content
-            FROM 
-                ContextRaw AS c
-            INNER JOIN 
-                (
-                SELECT 
-                    key AS prompt_key, 
-                    id, 
-                    prompt, 
-                    context_index 
-                    FROM PromptContextIndex CROSS JOIN UNNEST(context_indexes) AS context_index
-                ) AS p
-            ON 
-                c.id = p.context_index
-            GROUP BY 
-                p.prompt_key,
-                p.prompt,
-                p.id
-            )
-        GROUP BY 
-            prompt_key,
-            id,
-            prompt,
-            title,
-            description, 
-            content
-    );
-```
-<p>Here, you can also concat additional text in the message column to make the response more in-line to the requirements, for eg: "Answer the question based on the given information:"</p>
-
-```sql
-INSERT INTO `<CC_KAFKA_PROMPT_ENRICHED_TOPIC>` 
--- Copy the above select statement here.
-```
-
 <p>6. Check the data in the final table, run:</p>
 
 ```sql
-SELECT * FROM `<CC_KAFKA_PROMPT_ENRICHED_TOPIC>` ;
+SELECT * FROM `knowledge_infused_prompt` ;
 ```
 
 #### Generation:
 
+<p>Now we have obtained the full context for the prompt we have inserted , the next task is to feed this input to a ML_MODEL to get a desired response for the given prompt with the help of the obtained conext. Let's follow the below series to execute this</p>
+
 <p>1. Check the HTTP Sink connector health and running status in the connector section on confluent cloud. Also verify the topic its consuming the data, this should be same as <b>"CC_KAFKA_PROMPT_ENRICHED_TOPIC"</b></p>
+
+```sql
+confluent flink connection create googleai-connection
+--cloud GCP \
+--region us-east1 \
+--type mongo \
+--endpoint https://generativelanguage.googleapis.com/v1beta/models/gemini-1.5-flash-latest:generateContent \
+--api-key <YOUR_API_KEY>
+```
 
 <p>2. Check the success, error and dlq topics created for this connector. The name of the topics would be success, error and dlq suffixed by <b>"-connector_id"</b></p>
 
-<p>3. Go to the terminal where the frontend is running, check if you are able to see the answer to question being asked in the prompt previously. 
+```sql
+CREATE MODEL RESPONSE_ML_MODEL
+INPUT (`text` STRING)
+OUTPUT (`output` STRING)
+WITH (
+  'googleai.connection' = 'googleai-connection',
+  'googleai.client_timeout' = '120',
+  'googleai.system_prompt' = 'Answer the below question based on given info in JSON format only.',
+  'provider' = 'googleai',
+  'task' = 'text_generation'
+);
+```
 
+<p>3. Go to the terminal where the frontend is running, check if you are able to see the answer to question being asked in the prompt previously. </p>
+
+```sql
+SELECT prompt_key,id,prompt,output as recommendation
+FROM knowledge_infused_prompt,
+LATERAL TABLE(
+    ML_PREDICT(
+        'RESPONSE_ML_MODEL',
+        (
+            'Question: ' ||
+             prompt || ' ' ||
+            'Similar descriptions obtained for above question (generated from RAG pipeline): ' || similar_descriptions || ' ' ||
+            'Similar titles obtained for above question (generated from RAG pipeline): ' || similar_titles || ' ' ||
+            'Similar content obtained for above question (generated from RAG pipeline): ' || similar_content || ' ' 
+        )
+    )
+);
+```
+
+
+```sql
+INSERT INTO `<RESPONSE_TOPIC>` 
+-- Copy the above select statement here.
+```
 <p><b>Note:</b> You may now play around by scraping other companies information as well by just changing the following: </p>
+
 
 ```bash
 # app/scripts/market_news_scrapper.sh

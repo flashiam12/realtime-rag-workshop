@@ -21,7 +21,6 @@ resource "local_file" "frontend_app" {
   content  = templatefile("${local.app_script_path}/frontend_app.tpl", 
   {
     CC_KAFKA_RAW_PROMPT_TOPIC       = "${confluent_kafka_topic.PromptRaw.topic_name}"
-    CC_KAFKA_PROMPT_RESPONSE_TOPIC  = "success-${confluent_connector.http-sink.id}"
     CC_CLUSTER_KAFKA_URL            = "${replace(confluent_kafka_cluster.default.bootstrap_endpoint, "SASL_SSL://", "")}"
     CC_CLUSTER_API_KEY              = "${confluent_api_key.cluster-api-key.id}"
     CC_CLUSTER_API_SECRET           = "${confluent_api_key.cluster-api-key.secret}"
