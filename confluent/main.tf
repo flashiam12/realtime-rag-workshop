@@ -8,6 +8,11 @@ terraform {
       source = "mongodb/mongodbatlas"
       version = "1.16.0"
     }
+    google = {
+      source = "hashicorp/google"
+      version = "5.23.0"
+    }
+    
   }
 }
 
@@ -44,6 +49,8 @@ variable "mongodbatlas_private_key" {}
 variable "openai_api_key" {}
 variable "newsapi_api_key" {}
 variable "company_of_interest" {}
+variable "identifier" {}
+variable "project_id" {}
 
 data "http" "myip" {
   url = "https://ipv4.icanhazip.com"
@@ -69,5 +76,10 @@ resource "mongodbatlas_project_ip_access_list" "confluent" {
   project_id = data.mongodbatlas_project.default.id
   cidr_block = each.value.ip_prefix
   comment    = "cidr block for confluent acc testing"
+}
+
+provider "google" {
+  project = var.project_id
+  region  = "us-central1"
 }
 

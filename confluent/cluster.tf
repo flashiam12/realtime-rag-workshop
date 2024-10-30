@@ -14,8 +14,8 @@ resource "confluent_environment" "default" {
 resource "confluent_kafka_cluster" "default" {
   display_name = "sentiment_analysis"
   availability = "SINGLE_ZONE"
-  cloud        = "AWS"
-  region       = "us-east-1"
+  cloud        = "GCP"
+  region       = "us-central1"
   standard {}
 
   environment {

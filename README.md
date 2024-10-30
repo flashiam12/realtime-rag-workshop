@@ -22,6 +22,7 @@ a. Software:
     1. Python3 > 3.9
     2. Terraform CLI
     3. Confluent Cloud CLI
+    4. Google Cloud
 
 b. Access:
     1. Confluent Cloud Account Access 
@@ -36,6 +37,14 @@ b. Access:
 
 <p> <b>Note:</b> Get your own News API key for free on the given URL. For OpenAI API Key, if you don't have any existing account, you can use your own API key for free, else please reach out to workshop owners to get one.</p>
 
+### Authenticate your Google Cloud account
+```
+gcloud auth login
+
+gcloud auth application-default login  
+
+```
+
 <p> 1. Navigate to <b>confluent/scripts/scaffold_confluent_cloud.sh</b> and edit the following:</p>
 
 ```bash
@@ -48,6 +57,8 @@ export TF_VAR_mongodbatlas_private_key="<MongoDB Private API Key>"
 export TF_VAR_openai_api_key="<OpenAI API Key - https://platform.openai.com/api-keys>"
 export TF_VAR_newsapi_api_key="<NewsAPI Key - https://newsapi.org/register>"
 export TF_VAR_company_of_interest="<Company to use for analysis>"
+export TF_VAR_identifier="<Unique Identifier your name/team name[In small caps]>"
+export TF_VAR_project_id="<GCP project ID>"
 ```
 
 <p> 2. After Setting the variables, run: </p>
@@ -136,8 +147,43 @@ export MONGO_DATABASE_INDEX=
 <p>2. In a different terminal, run:</p>
 
 ```bash
-./app/scripts/news_embedding_client.sh
+confluent login --save 
+confluent use env --<YOUR_ENVIRONMENT_ID>
+confluent flink connection create vertexai-embedding-connection  --cloud GCP \
+--region us-central1 \
+--type vertexai \
+--endpoint https://us-central1-aiplatform.googleapis.com/v1/projects/<YOUR_PROJECT_ID>/locations/us-central1/publishers/google/models/text-embedding-004:predict \
+--service-key "$(cat service_account_key.json)"
 ```
+
+
+```sql
+CREATE MODEL EMBEDDING_MODEL
+INPUT (`text` STRING)
+OUTPUT (`output` ARRAY<FLOAT>)
+WITH (
+  'vertexai.connection' = 'vertexai-embedding-connection',
+  'provider' = 'vertexai',
+  'vertexai.input_format' = 'VERTEX-EMBED',
+  'task' = 'embedding'
+);
+```
+
+```sql
+INSERT INTO `<CC_KAFKA_EMBEDDING_NEWS_TOPIC>`
+SELECT CAST(id AS BYTES),id,`output` as knowledge_embedding,published_at,`source` FROM ContextRaw, 
+LATERAL TABLE(
+    ML_PREDICT(
+        'EMBEDDING_MODEL',(
+            'title: ' || title || ', ' ||
+            'description: ' || description || ', ' ||
+            'content: ' || content || ', ' ||
+            'published_at: ' || published_at
+        )
+    )
+);
+```
+
 
 <p>3. Verify the data in the respective topics - <b>$CC_KAFKA_RAW_NEWS_TOPIC</b> and <b>$CC_KAFKA_EMBEDDING_NEWS_TOPIC</b>. Also, check if the MongoDB sink connector is healthy and running in connector section on Confluent Cloud.</p>
 
@@ -164,7 +210,7 @@ export MONGO_DATABASE_INDEX=
 ```bash
 ./app/scripts/frontend_app.sh
 ```
-<p><b>Note:</b> After running this script, you would be asked to enter a question as prompt. Enter a question related to the company of interest for sentiment analysis, please refere to <b>assets/sentiment_analysis_qna.txt</b> for references</p>
+<p><b>Note:</b> After running this script, you would be asked to enter a question as prompt. Enter a couple of questions related to the company of interest for sentiment analysis, please refere to <b>assets/sentiment_analysis_qna.txt</b> for references</p>
 
 <p> 3. Get the Confluent Cloud & Flink SQL parameters from the outputs.txt </p>
 

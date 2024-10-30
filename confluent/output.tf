@@ -30,6 +30,10 @@ resource "null_resource" "default_output" {
       echo "CC_FLINK_COMPUTE_POOL_NAME='${confluent_flink_compute_pool.default.display_name}'" >> outputs.txt
       echo "CC_FLINK_COMPUTE_POOL_ID='${confluent_flink_compute_pool.default.id}'" >> outputs.txt
       echo "" >> outputs.txt
+      echo "# Google Cloud" >> outputs.txt
+      echo "GCP_SERVICE_ACCOUNT='${google_service_account.rag_workshop_service_account.display_name}'" >> outputs.txt
+      echo "GCP_SERVICE_ACCOUNT_KEY_PATH='./credentials/service_account_key.json'" >> outputs.txt
+      echo "" >> outputs.txt
       echo "# MongoDB Atlas" >> outputs.txt
       echo "MONGO_CLUSTER_SERVER_URL='${mongodbatlas_cluster.default.connection_strings[0].standard_srv}'" >> outputs.txt
       echo "MONGO_CLUSTER_REPLICAS='${mongodbatlas_cluster.default.connection_strings[0].standard}'" >> outputs.txt

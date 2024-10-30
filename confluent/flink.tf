@@ -1,8 +1,8 @@
 data "confluent_organization" "default" {}
 
 data "confluent_flink_region" "default" {
-  cloud   = "AWS"
-  region  = "us-east-1"
+  cloud   = "GCP"
+  region  = "us-central1"
 }
 
 resource "confluent_role_binding" "environment-admin" {
@@ -13,8 +13,8 @@ resource "confluent_role_binding" "environment-admin" {
 
 resource "confluent_flink_compute_pool" "default" {
   display_name     = "sentiment_analysis_pipeline_pool"
-  cloud            = "AWS"
-  region           = "us-east-1"
+  cloud            = "GCP"
+  region           = "us-central1"
   max_cfu          = 5
   environment {
     id = confluent_environment.default.id
