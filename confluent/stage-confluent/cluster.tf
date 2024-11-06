@@ -5,7 +5,9 @@ resource "confluent_service_account" "default" {
 
 resource "confluent_environment" "default" {
   display_name = "confluent_workshop"
-
+  stream_governance {
+    package = "ESSENTIALS"
+  }
   lifecycle {
     prevent_destroy = false
   }

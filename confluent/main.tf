@@ -2,11 +2,7 @@ terraform {
   required_providers {
     confluent = {
       source = "confluentinc/confluent"
-      version = "1.76.0"
-    }
-    mongodbatlas = {
-      source = "mongodb/mongodbatlas"
-      version = "1.16.0"
+      version = ">= 1.83.0"
     }
     google = {
       source = "hashicorp/google"
@@ -16,70 +12,55 @@ terraform {
   }
 }
 
-provider "confluent" {
-    cloud_api_key = var.cc_cloud_api_key
-    cloud_api_secret = var.cc_cloud_api_secret
-}
-
-# provider "confluent" {
-#   alias = "cluster"
-#   kafka_api_key = confluent_api_key.cluster-api-key.id
-#   kafka_api_secret = confluent_api_key.cluster-api-key.secret
-#   kafka_id = confluent_kafka_cluster.default.id
-#   kafka_rest_endpoint = confluent_kafka_cluster.default.rest_endpoint
-# }
-
-# provider "confluent" {
-#   alias = "schema"
-#   schema_registry_api_key = confluent_api_key.schema-registry-api-key.id
-#   schema_registry_api_secret = confluent_api_key.schema-registry-api-key.secret
-#   schema_registry_id = confluent_schema_registry_cluster.default.id
-#   schema_registry_rest_endpoint = confluent_schema_registry_cluster.default.id
-# }
-
-provider "mongodbatlas" {
-  public_key = var.mongodbatlas_public_key
-  private_key  = var.mongodbatlas_private_key
-}
-
-variable "cc_cloud_api_key" {}
-variable "cc_cloud_api_secret" {}
-variable "mongodbatlas_public_key" {}
-variable "mongodbatlas_private_key" {}
-variable "openai_api_key" {}
-variable "newsapi_api_key" {}
-variable "company_of_interest" {}
-variable "identifier" {}
-variable "project_id" {}
-
-data "http" "myip" {
-  url = "https://ipv4.icanhazip.com"
-}
-
-data "confluent_ip_addresses" "default" {
-  filter {
-    clouds        = ["AWS"]
-    regions       = ["us-east-1"]
-    services      = ["CONNECT"]
-    address_types = ["EGRESS"]
-  }
-}
-
-resource "mongodbatlas_project_ip_access_list" "local" {
-  project_id = data.mongodbatlas_project.default.id
-  cidr_block = "${chomp(data.http.myip.response_body)}/32"
-  comment    = "cidr block for local acc testing"
-}
-
-resource "mongodbatlas_project_ip_access_list" "confluent" {
-  for_each   = { for ip in data.confluent_ip_addresses.default.ip_addresses : ip.ip_prefix => ip }
-  project_id = data.mongodbatlas_project.default.id
-  cidr_block = each.value.ip_prefix
-  comment    = "cidr block for confluent acc testing"
-}
-
 provider "google" {
   project = var.project_id
   region  = "us-central1"
 }
 
+provider "confluent" {
+    cloud_api_key = var.cc_cloud_api_key
+    cloud_api_secret = var.cc_cloud_api_secret
+}
+
+variable "cc_cloud_api_key" {}
+variable "cc_cloud_api_secret" {}
+variable "gemini_api_key" {}
+variable "newsapi_api_key" {}
+variable "company_of_interest" {}
+variable "identifier" {}
+variable "project_id" {}
+
+
+module "stage1" {
+  providers = {
+    google = google
+  }
+
+  source = "./stage-gcp"
+  cc_cloud_api_key = var.cc_cloud_api_key
+  cc_cloud_api_secret = var.cc_cloud_api_secret
+  gemini_api_key = var.gemini_api_key
+  newsapi_api_key = var.newsapi_api_key
+  company_of_interest = var.company_of_interest
+  identifier = var.identifier
+  project_id = var.project_id
+  
+
+}
+
+module "stage2" {
+  providers = {
+    confluent = confluent
+  }
+  source = "./stage-confluent"
+  vertex_ai_index_endpoint=module.stage1.vertex_ai_index_endpoint
+  service_account_display_name=module.stage1.service_account_display_name
+  cc_cloud_api_key = var.cc_cloud_api_key
+  cc_cloud_api_secret = var.cc_cloud_api_secret
+  gemini_api_key = var.gemini_api_key
+  newsapi_api_key = var.newsapi_api_key
+  company_of_interest = var.company_of_interest
+  identifier = var.identifier
+  project_id = var.project_id
+  depends_on = [module.stage1]
+}

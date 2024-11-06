@@ -1,8 +1,7 @@
 from ..utils.clients import KafkaConsumer, KafkaProducer
-from ..utils.types import PromptRaw, PromptContextIndex
-from ..utils.schemas import prompt_raw_schema_str, prompt_context_index_schema_str
-from ..utils.openai import embedding
-from ..retrieval.vars import FRONTEND_RAW_PROMPT_TOPIC, RETRIEVAL_PROMPTCONTEXT_INDEX_TOPIC, CC_BOOTSTRAP, CC_API_KEY, CC_API_SECRET, CC_SR_PASSWORD, CC_SR_USER, CC_SR_URL, KNOWLEDGE_OPENAI_APIKEY
+from ..utils.types import  PromptContextIndex,PromptEmbedding
+from ..utils.schemas import prompt_context_index_schema_str,prompt_embedding_schema_str
+from ..retrieval.vars import  CC_PROMPT_EMBEDDING_TOPIC, RETRIEVAL_PROMPTCONTEXT_INDEX_TOPIC, CC_BOOTSTRAP, CC_API_KEY, CC_API_SECRET, CC_SR_PASSWORD, CC_SR_USER, CC_SR_URL
 from ..retrieval.searcher import IndexSearch
 
 
@@ -14,9 +13,9 @@ def run():
                                     kafka_bootstrap=CC_BOOTSTRAP,
                                     kafka_api_key=CC_API_KEY,
                                     kafka_api_secret=CC_API_SECRET,
-                                    kafka_topic=FRONTEND_RAW_PROMPT_TOPIC,
-                                    topic_value_sr_class=PromptRaw,
-                                    topic_value_sr_str=prompt_raw_schema_str
+                                    kafka_topic=CC_PROMPT_EMBEDDING_TOPIC,
+                                    topic_value_sr_class=PromptEmbedding,
+                                    topic_value_sr_str=prompt_embedding_schema_str
                                     )
     kafka_producer = KafkaProducer(
                         sr_url=CC_SR_URL,
@@ -30,14 +29,12 @@ def run():
                         )
     index_search = IndexSearch()
     for message in kafka_consumer.poll_indefinately():
-        vectors = embedding(
-            content=message.prompt,
-            openai_api=KNOWLEDGE_OPENAI_APIKEY
-        )
+        print(message)
+        vectors = message.embedding_vector
         
         if vectors != []:
-            search_results = index_search.query_indexes(prompt_embedding=vectors)
-            matched_indexes = list(map(lambda x: x.get("id", "None"), search_results))
+            match_neighbors = index_search.query_indexes(prompt_embedding=vectors)
+            matched_indexes = [entry.id for sublist in match_neighbors for entry in sublist]
             prompt_context_index = PromptContextIndex(
                                             id=message.id,
                                             prompt=message.prompt,

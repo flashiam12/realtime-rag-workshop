@@ -7,7 +7,7 @@
 <p><b>Connect to the AI ecosystem:</b> Seamlessly integrate embedding models, LLMs, and external APIs through Kafka Connectors, simplifying communication and data flow.</p>
 <p><b>Build scalable pipelines with Confluent Cloud:</b> Leverage the robustness of Confluent Cloud Kafka clusters and Flink compute pools for real-time processing and analysis.</p>
 
-![alt text](./assets/example2.png)
+![alt text](./assets/architecture.png)
 
 <p><b>Real-World Application:</b> We'll apply these techniques to build a sentiment analysis pipeline, demonstrating how to extract insights from financial data and market news in real-time.</p>
 
@@ -22,20 +22,20 @@ a. Software:
     1. Python3 > 3.9
     2. Terraform CLI
     3. Confluent Cloud CLI
-    4. Google Cloud
+    4. Google Cloud CLI
 
 b. Access:
     1. Confluent Cloud Account Access 
-    2. MongoDB Atlas Account Access
-    3. OpenAI API Key - https://platform.openai.com/api-keys
-    4. NewsAPI API Key - https://newsapi.org/register
+    2. Google Cloud / Qwiklabs Account Access
+    3. Gemini API Key - [https://ai.google.dev/gemini-api/docs](https://ai.google.dev/gemini-api/docs)
+    4. NewsAPI API Key - [https://newsapi.org/register](https://newsapi.org/register)
 ```
 
 ### **Setup**
 
 <p> Signup to Confluent Cloud and MongoDB Atlas for Cloud Access </p>
 
-<p> <b>Note:</b> Get your own News API key for free on the given URL. For OpenAI API Key, if you don't have any existing account, you can use your own API key for free, else please reach out to workshop owners to get one.</p>
+<p> <b>Note:</b> Get your own News API key for free on the given URL. For Gemini API Key, if you don't have any existing account, you can use your own API key for free, else please reach out to workshop owners to get one.</p>
 
 ### Authenticate your Google Cloud account
 ```
@@ -52,9 +52,7 @@ gcloud auth application-default login
 
 export TF_VAR_cc_cloud_api_key="<Confluent Cloud API Key>"
 export TF_VAR_cc_cloud_api_secret="<Confluent Cloud API Secret>"
-export TF_VAR_mongodbatlas_public_key="<MongoDB Public API Key>"
-export TF_VAR_mongodbatlas_private_key="<MongoDB Private API Key>"
-export TF_VAR_openai_api_key="<OpenAI API Key - https://platform.openai.com/api-keys>"
+export TF_VAR_gemini_api_key="<Gemini API Key - https://ai.google.dev/gemini-api/docs>"
 export TF_VAR_newsapi_api_key="<NewsAPI Key - https://newsapi.org/register>"
 export TF_VAR_company_of_interest="<Company to use for analysis>"
 export TF_VAR_identifier="<Unique Identifier your name/team name[In small caps]>"
@@ -67,7 +65,7 @@ export TF_VAR_project_id="<GCP project ID>"
 ./confluent/scripts/scaffold_confluent_cloud.sh
 ```
 
-<p> 3. Successfull execution of the above script will result in: <br/><br/>a. A file named <b>confluent/outputs.txt</b> being created. <br/> b. Four bash scripts created for each kafka client in <b>app/scripts</b> <br/><br/> Verify the bash scripts env variables and their values from the outputs.txt</p>
+<p> 3. Successfull execution of the above script will result in: <br/><br/>a. A file named <b>confluent/outputs.txt</b> being created. <br/> b. Four bash scripts created for each kafkagoogleai client in <b>app/scripts</b> <br/><br/> Verify the bash scripts env variables and their values from the outputs.txt</p>
 
 ```bash
 # app/scripts/frontend_app.sh
@@ -96,7 +94,7 @@ export CC_CLUSTER_SR_PASS=
 
 # app/scripts/news_embedding_client.sh
 
-export OPENAI_APIKEY=
+
 export CC_KAFKA_RAW_NEWS_TOPIC=
 export CC_KAFKA_EMBEDDING_NEWS_TOPIC=
 export CC_CLUSTER_KAFKA_URL=
@@ -110,19 +108,12 @@ export CC_CLUSTER_SR_PASS=
 
 export CC_KAFKA_RAW_PROMPT_TOPIC=
 export CC_KAFKA_PROMPT_CONTEXTINDEX_TOPIC=
-export OPENAI_APIKEY=
 export CC_CLUSTER_KAFKA_URL=
 export CC_CLUSTER_API_KEY=
 export CC_CLUSTER_API_SECRET=
 export CC_CLUSTER_SR_URL=
 export CC_CLUSTER_SR_USER=
 export CC_CLUSTER_SR_PASS=
-export MONGO_CLUSTER_SERVER_URL=
-export MONGO_DATABASE_USER=
-export MONGO_DATABASE_PASSWORD=
-export MONGO_DATABASE=
-export MONGO_COLLECTION=
-export MONGO_DATABASE_INDEX=
 ```
 
 <p><b>Note:</b>If you find any differences between outputs.txt and the above variables, please check the step 1 and re-run step 2</p>
@@ -287,7 +278,7 @@ CROSS JOIN UNNEST(context_indexes) AS context_index;
 <p>2. In the flink shell, run the query to create a join table which stores joined context data and prompt data</p>
 
 ```sql
-CREATE TABLE prompt_context_join
+CREATE TABLE PromptContextJoin
 (
  prompt_key BYTES,
   id STRING,
@@ -302,7 +293,7 @@ CREATE TABLE prompt_context_join
 <p>3. In the flink shell, run the query to lookup against the text columns in raw context (ContextRaw) and PromptContextIndex  and join the rows where there is matching index id from the prompt context exploded table and raw context table.</p>
 
 ```sql
-INSERT INTO prompt_context_join
+INSERT INTO PromptContextJoin
 SELECT 
     p.prompt_key as prompt_key,
     p.id as id,
@@ -330,7 +321,7 @@ ON
 <p>4. In the flink shell, create a enhanced_prompt_context_join table which will store the aggregated results(similar matched contextes) for each unique prompt</p>
 
 ```sql
-CREATE TABLE enhanced_prompt_context_join
+CREATE TABLE EnhancedPromptContextJoin
 (
  prompt_key BYTES,
   id STRING,
@@ -345,7 +336,7 @@ CREATE TABLE enhanced_prompt_context_join
 
 
 ```sql
-INSERT into enhanced_prompt_context_join
+INSERT into EnhancedPromptContextJoin
 SELECT 
         prompt_key, 
         id, 
@@ -366,7 +357,7 @@ SELECT
   RANGE BETWEEN INTERVAL '1' HOUR PRECEDING AND CURRENT ROW
     ) AS content,
      now () as `timestamp`
-    FROM prompt_context_join;
+    FROM PromptContextJoin;
 ```
 
 <p>Here, the function LISTAGG will collect all the aggregated arrays created while inner join in previous step into one single array.This query aggregates related descriptions, titles, and content for each prompt within a one-hour timeframe, merging them into single fields for each unique prompt entry. It enhances prompt context by providing consolidated, recent information in a structured format to enrich responses. </p>
@@ -380,7 +371,7 @@ SELECT
 <p>5. In the flink sql shell, create a table knowledge_infused_prompt which will contain the entire knowledge for a prompt </p>
 
 ```sql
-CREATE TABLE knowledge_infused_prompt
+CREATE TABLE KnowledgeInfusedPrompt
 (
  prompt_key BYTES,
  id STRING,
@@ -395,19 +386,19 @@ CREATE TABLE knowledge_infused_prompt
 <p>5. In the flink sql shell, create a tumbling window with row num partitioned by unique prompt and order it by desc and select the latest record with entire context data</p>
 
 ```sql
-INSERT INTO `knowledge_infused_prompt`
+INSERT INTO `KnowledgeInfusedPrompt`
 SELECT `prompt_key`,`id`, `prompt`, `description`, `title`, `content` , `row_num`
 FROM (
     SELECT *,
            ROW_NUMBER() OVER (PARTITION BY window_start, window_end, `id`, `prompt`, `prompt_key` ORDER BY `timestamp` DESC) AS row_num
-    FROM TABLE(TUMBLE(TABLE `confluent_workshop`.`sentiment_analysis`.`enhanced_prompt_context_join`, DESCRIPTOR(`timestamp`), INTERVAL '10' SECOND))
+    FROM TABLE(TUMBLE(TABLE `confluent_workshop`.`sentiment_analysis`.`INSERT into EnhancedPromptContextJoin`, DESCRIPTOR(`timestamp`), INTERVAL '10' SECOND))
 )
 where row_num<=1;
 ```
 <p>6. Check the data in the final table, run:</p>
 
 ```sql
-SELECT * FROM `knowledge_infused_prompt` ;
+SELECT * FROM `KnowledgeInfusedPrompt` ;
 ```
 
 #### Generation:
@@ -419,8 +410,8 @@ SELECT * FROM `knowledge_infused_prompt` ;
 ```sql
 confluent flink connection create googleai-connection
 --cloud GCP \
---region us-east1 \
---type mongo \
+--region us-central1 \
+--type googleai \
 --endpoint https://generativelanguage.googleapis.com/v1beta/models/gemini-1.5-flash-latest:generateContent \
 --api-key <YOUR_API_KEY>
 ```
@@ -434,7 +425,7 @@ OUTPUT (`output` STRING)
 WITH (
   'googleai.connection' = 'googleai-connection',
   'googleai.client_timeout' = '120',
-  'googleai.system_prompt' = 'Answer the below question based on given info in JSON format only.',
+  'googleai.system_prompt' = 'Answer the below question based on given related info .',
   'provider' = 'googleai',
   'task' = 'text_generation'
 );
@@ -451,9 +442,9 @@ LATERAL TABLE(
         (
             'Question: ' ||
              prompt || ' ' ||
-            'Similar descriptions obtained for above question (generated from RAG pipeline): ' || similar_descriptions || ' ' ||
-            'Similar titles obtained for above question (generated from RAG pipeline): ' || similar_titles || ' ' ||
-            'Similar content obtained for above question (generated from RAG pipeline): ' || similar_content || ' ' 
+            'Similar/Related descriptions obtained for above question (generated from RAG pipeline): ' || similar_descriptions || ' ' ||
+            'Similar/Related titles obtained for above question (generated from RAG pipeline): ' || similar_titles || ' ' ||
+            'Similar/Related content obtained for above question (generated from RAG pipeline): ' || similar_content || ' ' 
         )
     )
 );
@@ -483,7 +474,7 @@ export TF_VAR_cc_cloud_api_key=
 export TF_VAR_cc_cloud_api_secret=
 export TF_VAR_mongodbatlas_public_key=
 export TF_VAR_mongodbatlas_private_key=
-export TF_VAR_openai_api_key=
+export TF_VAR_gemini_api_key=
 export TF_VAR_newsapi_api_key=
 export TF_VAR_company_of_interest=
 ```
@@ -519,7 +510,7 @@ cat vector_store.txt
 
 # b. LLM API
 cd .. # Navigate to Root 
-export OPENAI_APIKEY="xxxx"
+export gemini_APIKEY="xxxx"
 
 ./scripts/test_llm_api.sh
 ```
