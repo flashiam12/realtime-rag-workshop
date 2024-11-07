@@ -5,7 +5,9 @@ resource "confluent_service_account" "default" {
 
 resource "confluent_environment" "default" {
   display_name = "confluent_workshop"
-
+  stream_governance {
+    package = "ESSENTIALS"
+  }
   lifecycle {
     prevent_destroy = false
   }
@@ -14,8 +16,8 @@ resource "confluent_environment" "default" {
 resource "confluent_kafka_cluster" "default" {
   display_name = "sentiment_analysis"
   availability = "SINGLE_ZONE"
-  cloud        = "AWS"
-  region       = "us-east-1"
+  cloud        = "GCP"
+  region       = "us-central1"
   standard {}
 
   environment {
