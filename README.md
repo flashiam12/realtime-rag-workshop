@@ -370,7 +370,7 @@ SELECT `prompt_key`,`id`, `prompt`, `description`, `title`, `content` , `row_num
 FROM (
     SELECT *,
            ROW_NUMBER() OVER (PARTITION BY window_start, window_end, `id`, `prompt`, `prompt_key` ORDER BY `timestamp` DESC) AS row_num
-    FROM TABLE(TUMBLE(TABLE `confluent_workshop`.`sentiment_analysis`.`INSERT into EnhancedPromptContextJoin`, DESCRIPTOR(`timestamp`), INTERVAL '10' SECOND))
+    FROM TABLE(TUMBLE(TABLE `confluent_workshop`.`sentiment_analysis`.`EnhancedPromptContextJoin`, DESCRIPTOR(`timestamp`), INTERVAL '10' SECOND))
 )
 where row_num<=1;
 ```
@@ -384,7 +384,7 @@ SELECT * FROM `KnowledgeInfusedPrompt` ;
 
 <p>Now we have obtained the full context for the prompt we have inserted , the next task is to feed this input to a ML_MODEL to get a desired response for the given prompt with the help of the obtained conext. Let's follow the below series to execute this</p>
 
-<p>1. Create a flink sql connectio to latest gemini model, similar to how we created for the embedding model</p>
+<p>1. Create a flink sql connection to latest gemini model, similar to how we created for the embedding model</p>
 
 ```sql
 confluent flink connection create googleai-connection

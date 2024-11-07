@@ -17,6 +17,7 @@ def run():
                                     topic_value_sr_class=PromptEmbedding,
                                     topic_value_sr_str=prompt_embedding_schema_str
                                     )
+
     kafka_producer = KafkaProducer(
                         sr_url=CC_SR_URL,
                         sr_user=CC_SR_USER,
