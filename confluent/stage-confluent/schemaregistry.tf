@@ -9,8 +9,6 @@ output "default" {
   value = data.confluent_schema_registry_cluster.default
 }
 
-
-
 resource "confluent_role_binding" "schema-read" {
   principal   = "User:${confluent_service_account.default.id}"
   role_name   = "DeveloperRead"

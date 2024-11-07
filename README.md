@@ -107,6 +107,7 @@ export CC_CLUSTER_SR_PASS=
 # app/scripts/prompt_embedding_client.sh
 
 export CC_KAFKA_RAW_PROMPT_TOPIC=
+export CC_PROMPT_EMBEDDING_TOPIC=
 export CC_KAFKA_PROMPT_CONTEXTINDEX_TOPIC=
 export CC_CLUSTER_KAFKA_URL=
 export CC_CLUSTER_API_KEY=
@@ -144,7 +145,7 @@ confluent flink connection create vertexai-embedding-connection  --cloud GCP \
 --region us-central1 \
 --type vertexai \
 --endpoint https://us-central1-aiplatform.googleapis.com/v1/projects/<YOUR_PROJECT_ID>/locations/us-central1/publishers/google/models/text-embedding-004:predict \
---service-key "$(cat service_account_key.json)"
+--service-key "$(cat confluent/credentials/service_account_key.json)"
 ```
 
 
@@ -176,80 +177,58 @@ LATERAL TABLE(
 ```
 
 
-<p>3. Verify the data in the respective topics - <b>$CC_KAFKA_RAW_NEWS_TOPIC</b> and <b>$CC_KAFKA_EMBEDDING_NEWS_TOPIC</b>. Also, check if the MongoDB sink connector is healthy and running in connector section on Confluent Cloud.</p>
+<p>3. Verify the data in the respective topics - <b>$CC_KAFKA_RAW_NEWS_TOPIC</b> and <b>$CC_KAFKA_EMBEDDING_NEWS_TOPIC</b>. Also, check if the Context Sink Connector(Cloud Function Sink Connector) is healthy and running in connector section on Confluent Cloud.</p>
 
-<p>4. Verify the data sinked to MongoDB database and collection (refer outputs.txt). Also, verify that the index for this collection is active. </p>
+<p>4. Verify the data sinked to VertexAI Vector Search using the success topic success-lcc-[...]. </p>
 
-<p><b>Note:</b> The index might not be active since the data in collection will occur to exist only after running Step 2. To make sure that the index is active, please run the scaffold command once again:</p>
-
-```bash
-./confluent/scripts/scaffold_confluent_cloud.sh
-```
+<p>4. This completes your knowledge workflow.Now we have context data stored into vector search and pipeline for upcoming real time context.</p>
 
 ### **Inference Workflow**
 
 #### Retrieval: 
 
-<p>1. Open a new terminal and start the prompt embedding client, run:</p>
-
-```bash
-./app/scripts/prompt_embedding_client.sh
-```
-
-<p>2. In a different terminal, start the frontend, run:</p>
+<p>1. In a different terminal, start the frontend, run:</p>
 
 ```bash
 ./app/scripts/frontend_app.sh
 ```
-<p><b>Note:</b> After running this script, you would be asked to enter a question as prompt. Enter a couple of questions related to the company of interest for sentiment analysis, please refere to <b>assets/sentiment_analysis_qna.txt</b> for references</p>
+<p><b>Note:</b> After running this script, you would be asked to enter a question as prompt. Enter a couple of questions related to the company of interest for sentiment analysis, please refere to <b>assets/sentiment_analysis_qna.txt</b> for references. Keep the producer running to insert continous stream of data in the later part of workshop.</p>
 
-<p> 3. Get the Confluent Cloud & Flink SQL parameters from the outputs.txt </p>
 
-```bash
-cat confluent/outputs.txt
-
-# Confluent Cloud
-CC_ENV_NAME=
-CC_CLUSTER_NAME=
-CC_CLUSTER_ID=
-
-# Confluent Flink
-CC_FLINK_COMPUTE_POOL_NAME=
-CC_FLINK_COMPUTE_POOL_ID=
-```
-
-<p>4. In a different terminal, open the Flink SQL shell:</p>
+<p>2. Open a new terminal and start the prompt embedding client, run:</p>
 
 ```bash
-confluent login --save # Enter your username and password. In case of SSO, will be redirected to browser
-
-confluent flink shell --compute-pool <CC_FLINK_COMPUTE_POOL_NAME> --environment <CC_ENV_NAME>
+./app/scripts/prompt_embedding_client.sh
 ```
+<p><b>Note:</b>Complete the next step to see data coming through the script.</p>
 
-<p>5. Inside the flink shell, set the given database as cluster name and check the tables: </p>
+
+<p>3.Now let's setup a function which creates embeddings for the prompts entered in the above step. Go to the FlinkSQL workspace and run the below query utilizing embedding model created in knowledge workflow.</p>
+
+```sql
+INSERT INTO `<CC_PROMPT_EMBEDDING_TOPIC>`
+SELECT CAST(id AS BYTES),`output` as embedding_vector,id,prompt,`timestamp` FROM `<CC_KAFKA_RAW_PROMPT_TOPIC>`, 
+LATERAL TABLE(
+    ML_PREDICT(
+        'EMBEDDING_MODEL',(
+            'prompt: ' || prompt 
+        )
+    )
+);
+```
+<p>4.Verify the data in the respective topics <b>$CC_PROMPT_EMBEDDING_TOPIC</b> and <b>$CC_KAFKA_PROMPT_CONTEXTINDEX_TOPIC</b> </p>
+
+
+<p>5. Open up the flinkSQL workspace on to the confluent UI:</p>
+
+
+<p>5. Inside the flink workspace, set the given database as cluster name and check the tables: </p>
 
 ```sql 
-USE `<CC_CLUSTER_NAME>`;
-
 SHOW TABLES;
 ```
 
-<p>6. Check the data present in the prompt context table (containing matched index ids against the prompt) and raw context table (containing the actual text against index ids), run:<p>
-
-```bash 
-cat outputs.txt
-
-# Confluent Kafka
-CC_CLUSTER_API_KEY=
-CC_CLUSTER_API_SECRET=
-CC_CLUSTER_KAFKA_URL=
-CC_KAFKA_RAW_NEWS_TOPIC=
-CC_KAFKA_EMBEDDING_NEWS_TOPIC=
-CC_KAFKA_RAW_PROMPT_TOPIC=
-CC_KAFKA_PROMPT_CONTEXTINDEX_TOPIC=
-CC_KAFKA_PROMPT_ENRICHED_TOPIC=
-```
-<p>In the flink shell, run:</p>
+<p>6. Check the data present in the promptcontextindex table (containing matched index ids against the prompt) and raw context table (containing the actual text against index ids), run:<p>
 
 ```sql
 SELECT * FROM `<CC_KAFKA_RAW_NEWS_TOPIC>`;
@@ -405,7 +384,7 @@ SELECT * FROM `KnowledgeInfusedPrompt` ;
 
 <p>Now we have obtained the full context for the prompt we have inserted , the next task is to feed this input to a ML_MODEL to get a desired response for the given prompt with the help of the obtained conext. Let's follow the below series to execute this</p>
 
-<p>1. Check the HTTP Sink connector health and running status in the connector section on confluent cloud. Also verify the topic its consuming the data, this should be same as <b>"CC_KAFKA_PROMPT_ENRICHED_TOPIC"</b></p>
+<p>1. Create a flink sql connectio to latest gemini model, similar to how we created for the embedding model</p>
 
 ```sql
 confluent flink connection create googleai-connection
@@ -413,10 +392,10 @@ confluent flink connection create googleai-connection
 --region us-central1 \
 --type googleai \
 --endpoint https://generativelanguage.googleapis.com/v1beta/models/gemini-1.5-flash-latest:generateContent \
---api-key <YOUR_API_KEY>
+--api-key <Gemini API Key>
 ```
 
-<p>2. Check the success, error and dlq topics created for this connector. The name of the topics would be success, error and dlq suffixed by <b>"-connector_id"</b></p>
+<p>2. Create a model with the above connection which will help to generate a text based response.</p>
 
 ```sql
 CREATE MODEL RESPONSE_ML_MODEL
@@ -431,11 +410,11 @@ WITH (
 );
 ```
 
-<p>3. Go to the terminal where the frontend is running, check if you are able to see the answer to question being asked in the prompt previously. </p>
+<p>3. Run a ML_PREDICT on the above model with knowledge infused prompt generated in the previous steps. </p>
 
 ```sql
-SELECT prompt_key,id,prompt,output as recommendation
-FROM knowledge_infused_prompt,
+SELECT id,prompt,output as response
+FROM <Knowledge_Infused_Prompt_Topic_Name>,
 LATERAL TABLE(
     ML_PREDICT(
         'RESPONSE_ML_MODEL',
@@ -450,9 +429,9 @@ LATERAL TABLE(
 );
 ```
 
-
+<p>4. Check outputs.txt to see value for <CC_RESPONSE_TOPIC></p>
 ```sql
-INSERT INTO `<RESPONSE_TOPIC>` 
+INSERT INTO `<CC_RESPONSE_TOPIC>` 
 -- Copy the above select statement here.
 ```
 <p><b>Note:</b> You may now play around by scraping other companies information as well by just changing the following: </p>
@@ -470,13 +449,13 @@ export COMPANY_OF_INTEREST= # Type the other company of interest.
 <p>1. Define the following env variables in the file <b>confluent/scripts/teardown_confluent_cloud.sh</b></p>
 
 ```bash
-export TF_VAR_cc_cloud_api_key=
-export TF_VAR_cc_cloud_api_secret=
-export TF_VAR_mongodbatlas_public_key=
-export TF_VAR_mongodbatlas_private_key=
-export TF_VAR_gemini_api_key=
-export TF_VAR_newsapi_api_key=
-export TF_VAR_company_of_interest=
+export TF_VAR_cc_cloud_api_key="<Confluent Cloud API Key>"
+export TF_VAR_cc_cloud_api_secret="<Confluent Cloud API Secret>"
+export TF_VAR_gemini_api_key="<Gemini API Key - https://ai.google.dev/gemini-api/docs>"
+export TF_VAR_newsapi_api_key="<NewsAPI Key - https://newsapi.org/register>"
+export TF_VAR_company_of_interest="<Company to use for analysis>"
+export TF_VAR_identifier="<Unique Identifier your name/team name[In small caps]>"
+export TF_VAR_project_id="<GCP project ID>"
 ```
 
 <p>2. Run the teardown script:</p>
@@ -488,213 +467,3 @@ export TF_VAR_company_of_interest=
 ### **Conclusion**
 
 <p>We were able to demonstrate the realtime RAG capability with Data streaming platform "Kafka" and stream processing platform "Flink". For other such pipelines, you can change the scraped raw context with other kind of real time information and add your own interesting prompt enrichment text for zero shot learning. Also, this could be integrated to any other LLM API, including multimodality Generative and Embedding models.</p>
-
-
-
-
-
-
-<!-- 
-
-```bash
-# a. Vector Store
-
-export MONGODB_ATLAS_PUBLIC_KEY="xxxx"
-export MONGODB_ATLAS_PRIVATE_KEY="xxxx"
-
-cd external
-terraform init
-terraform apply
-
-cat vector_store.txt
-
-# b. LLM API
-cd .. # Navigate to Root 
-export gemini_APIKEY="xxxx"
-
-./scripts/test_llm_api.sh
-```
-
-#### 2. Confluent Cloud Setup
-
-```bash 
-# a. Confluent Cloud API 
-export CONFLUENT_CLOUD_API_KEY="<cloud_api_key>"
-export CONFLUENT_CLOUD_API_SECRET="<cloud_api_secret>"
-
-# b. Setup kafka cluster & flink pool 
-cd confluent
-
-terraform init
-terraform apply -target confluent_kafka_cluster.default -target confluent_flink_compute_pool.default
-
-# c. Setup the topics required for Frontend and market news scrapper
-
-terraform apply -target confluent_kafka_topic.frontend_prompt_raw -target confluent_kafka_topic.news_context_raw -target confluent_kafka_topic.news_context_embedding -target confluent_kafka_topic.retrieval_prompt_contextindex
-
-# d. Confluent CLI Setup
-confluent --help # Check if CLI is installed properly
-confluent login # Provide the username & password to signin
-confluent env use "<confluent_env>" # Created in 2b
-confluent api-key create --resource "<cluster_id>" --description "Cluster Default Key" # Cluster created in 2c
-
-# e. Define the Client properties for kafka clients
-
-```
-
-#### 3. Market News Scrapper App
-
-```bash 
-# a. Stock Symbol & Market Selection 
-
-cd .. # Back to root directory
-export SCRAP_STOCK_SYMBOL="CFLT"
-export STOCK_MARKET="NASDAQ"
-
-# b. News Producer Kafka Client
-export CC_CLUSTER_API_KEY="xxxx" # Created in step 2d
-export CC_CLUSTER_API_SECRET="xxxx" # Created in step 2d
-
-export CC_CLUSTER_KAFKA_URL="<bootstrap URL>" # Created in step 2b
-export CC_KAFKA_RAW_NEWS_TOPIC="<context raw topic>" # Created in step 2c
-
-./scripts/market_news_scrapper.sh
-```
-
-
-### Real Time Knowledge Pipeline 
-
-#### 1. Process
-```bash
-# a. Export required vars
-export CC_KAFKA_RAW_NEWS_TOPIC="<context raw topic>"
-export CC_KAFKA_EMBEDDING_NEWS_TOPIC="<context embedding topic>"
-
-# b. Start the news embedding kafka client
-./scripts/news_embedding_client.sh
-
-```
-#### 2. Connect
-```bash
-# a. Create Mongo Atlas Sink connector for News Emdedding Upsert to Mongo Atlas Vector Search
-cd confluent
-terraform apply -target confluent_connector.knowledge_embedding_mongo_sink 
-
-# b. Get the configurations for the created connector 
-confluent connect describe "<cc connector id>" # Created above
-```
-
-#### 3. Stream 
-```bash
-
-# a. Define flink compute pool id and env id 
-export CC_FLINK_COMPUTE_POOL_ID="<flink compute pool id>"
-export CC_ENV_ID="<confluent env id>"
-
-# b. Log on to flink shell
-confluent flink shell --compute-pool ${CC_FLINK_COMPUTE_POOL_ID} --environment ${CC_ENV_ID}
-
-# c. Check messages in the topic table
-SELECT * FROM ${CC_KAFKA_EMBEDDING_NEWS_TOPIC}
-```
-
-### Retrieval Pipeline
-
-#### 1. Process 
-
-```bash
-# a. Export the required the params
-export CC_KAFKA_RAW_PROMPT_TOPIC="<>"
-export CC_KAFKA_PROMPT_CONTEXTINDEX_TOPIC="<>"
-export MONGO_ATLAS_ENDPOINT="<>"
-export MONGO_USERNAME="<>"
-export MONGO_PASSWORD="<>"
-
-# b. Start the prompt emdedding kafka client
-./scripts/prompt_embedding_client.sh
-```
-
-#### 2. Stream
-
-```bash
-# a. Export the required the params
-export CC_FLINK_COMPUTE_POOL_ID="<flink compute pool id>"
-export CC_ENV_ID="<confluent env id>"
-
-# b. Log on to flink shell
-confluent flink shell --compute-pool ${CC_FLINK_COMPUTE_POOL_ID} --environment ${CC_ENV_ID}
-
-# c. Check messages in the topic table
-SELECT * FROM ${CC_KAFKA_PROMPT_CONTEXTINDEX_TOPIC}
-
-```
-
-### Augmentation & Generation Pipeline
-
-#### 1. Process
-```bash
-# a. Export the required the params
-export CC_FLINK_COMPUTE_POOL_ID="<flink compute pool id>"
-export CC_ENV_ID="<confluent env id>"
-
-# b. Log on to flink shell
-confluent flink shell --compute-pool ${CC_FLINK_COMPUTE_POOL_ID} --environment ${CC_ENV_ID}
-
-# c. Create Enriched Prompt Table
-
-# d. Flink SQL to enrich prompt with context text & semantic pre-processing
-
-# e. Insert the final result to Enriched Prompt Table
-```
-
-#### 2. Connect
-```bash
-# a. Create Mongo Atlas Sink connector for News Emdedding Upsert to Mongo Atlas Vector Search
-cd confluent
-terraform apply -target confluent_connector.generation_llm_request
-
-# b. Get the configurations for the created connector 
-confluent connect describe "<cc connector id>" # Created above
-```
-
-#### 3. Stream
-```bash 
-# a. export Topic for LLM HTTP response
-export CC_KAFKA_PROMPT_RESPONSE_TOPIC="<prompt answer topic>" # Get from 2b
-export CC_FLINK_COMPUTE_POOL_ID="<flink compute pool id>"
-export CC_ENV_ID="<confluent env id>"
-
-# b. Log on to flink shell
-confluent flink shell --compute-pool ${CC_FLINK_COMPUTE_POOL_ID} --environment ${CC_ENV_ID}
-
-# c. Check messages in the topic table
-SELECT * FROM ${CC_KAFKA_PROMPT_RESPONSE_TOPIC}
-```
-
-### Frontend App Testing
-```bash
-# a. Define required vars
-export CC_KAFKA_RAW_PROMPT_TOPIC="<prompt raw topic>"
-export CC_KAFKA_PROMPT_RESPONSE_TOPIC="<prompt answer topic>"
-
-# b. Start the frontend app
-./scripts/frontend_app.sh
-
-# c. Produce the prompt as input and check the answers
-
-# d. Check the answer & modify as per the need
-```
-
-### Teardown
-
-```bash 
-# a. Destroy Confluent resources
-cd confluent
-terraform destroy
-
-# b. Destroy Mongo Resources
-cd external
-terraform destroy
-
-# c. Stop all the running scripts
-``` -->

@@ -18,6 +18,7 @@ resource "confluent_schema" "ContextRaw" {
   lifecycle {
     prevent_destroy = false
   }
+  depends_on=[data.confluent_schema_registry_cluster.default]
 }
 
 resource "confluent_schema" "ContextEmbedding" {
@@ -37,6 +38,7 @@ resource "confluent_schema" "ContextEmbedding" {
   lifecycle {
     prevent_destroy = false
   }
+  depends_on=[data.confluent_schema_registry_cluster.default]
 }
 
 resource "confluent_schema" "PromptRaw" {
@@ -56,6 +58,7 @@ resource "confluent_schema" "PromptRaw" {
   lifecycle {
     prevent_destroy = false
   }
+  depends_on=[data.confluent_schema_registry_cluster.default]
 }
 
 resource "confluent_schema" "PromptContextIndex" {
@@ -75,6 +78,7 @@ resource "confluent_schema" "PromptContextIndex" {
   lifecycle {
     prevent_destroy = false
   }
+  depends_on=[data.confluent_schema_registry_cluster.default]
 }
 
 resource "confluent_schema" "PromptEnriched" {
@@ -94,6 +98,7 @@ resource "confluent_schema" "PromptEnriched" {
   lifecycle {
     prevent_destroy = false
   }
+  depends_on=[data.confluent_schema_registry_cluster.default]
 }
 
 resource "confluent_schema" "PromptEmbedding" {
@@ -113,4 +118,25 @@ resource "confluent_schema" "PromptEmbedding" {
   lifecycle {
     prevent_destroy = false
   }
+  depends_on=[data.confluent_schema_registry_cluster.default]
+}
+
+resource "confluent_schema" "GeneratedResponseTopic" {
+  schema_registry_cluster {
+    id = data.confluent_schema_registry_cluster.default.id
+  }
+  rest_endpoint = data.confluent_schema_registry_cluster.default.rest_endpoint
+  subject_name = "GeneratedResponseTopic-value"
+  format = "JSON"
+  schema = file("../app/schemas/GeneratedResponseTopic-value.json")
+  recreate_on_update = false
+  hard_delete = true
+  credentials {
+    key    = confluent_api_key.schema-registry-api-key.id
+    secret = confluent_api_key.schema-registry-api-key.secret
+  }
+  lifecycle {
+    prevent_destroy = false
+  }
+  depends_on=[data.confluent_schema_registry_cluster.default]
 }

@@ -20,6 +20,7 @@ resource "null_resource" "default_output" {
       echo "CC_KAFKA_EMBEDDING_NEWS_TOPIC='${confluent_kafka_topic.ContextEmbedding.topic_name}'" >> outputs.txt
       echo "CC_KAFKA_RAW_PROMPT_TOPIC='${confluent_kafka_topic.PromptRaw.topic_name}'" >> outputs.txt
       echo "CC_KAFKA_PROMPT_CONTEXTINDEX_TOPIC='${confluent_kafka_topic.PromptContextIndex.topic_name}'" >> outputs.txt
+      echo "CC_RESPONSE_TOPIC='${confluent_kafka_topic.GeneratedResponseTopic.topic_name}'" >> outputs.txt
       echo "CC_KAFKA_PROMPT_ENRICHED_TOPIC='PromptContext'" >> outputs.txt
       echo "" >> outputs.txt
       echo "# Confluent Schema Registry" >> outputs.txt
