@@ -106,7 +106,7 @@ resource "google_vertex_ai_index" "index" {
 # Define Vertex AI Index Endpoint
 resource "google_vertex_ai_index_endpoint" "index_endpoint" {
 
-  display_name = "${var.identifier}-endpoint"
+  display_name = "${var.identifier}-workshop-endpoint"
   description  = "A sample vertex endpoint"
   region       = "us-central1"
   

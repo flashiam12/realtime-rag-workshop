@@ -1,10 +1,10 @@
 ## Confluent Event Driven Workshop 
 ### GenAI Powered Real time Sentiment Analysis Pipeline 
 
-<p> With Confluent Cloud Kafka as the central nervous system, the idea to operationalize and adopt GenAI managed services from various hyperscalers looks a very feasible reality. This hands-on workshop dives deep into building a real-time sentiment analysis pipeline leveraging the power of FlinkSQL, vector databases, and Large Language Models (LLMs). We'll explore how to:</p>
+<p> With Confluent Cloud Kafka as the central nervous system, the idea to operationalize and adopt GenAI managed services from various hyperscalers looks a very feasible reality. This hands-on workshop dives deep into building a real-time sentiment analysis pipeline leveraging the power of FlinkSQL, FlinkAI, vector databases, and Large Language Models (LLMs). We'll explore how to:</p>
 
 <p> <b>Harness FlinkSQL for data enrichment:</b> Aggregate real-time financial data and market news analysis, enriching prompts with context retrieved from a vector database using FlinkSQL's powerful JOIN capabilities. </p>
-<p><b>Connect to the AI ecosystem:</b> Seamlessly integrate embedding models, LLMs, and external APIs through Kafka Connectors, simplifying communication and data flow.</p>
+<p><b>Connect to the AI ecosystem:</b> Seamlessly integrate embedding models and LLMs with FlinkAI ,external APIs through Kafka Connectors, simplifying communication and data flow.</p>
 <p><b>Build scalable pipelines with Confluent Cloud:</b> Leverage the robustness of Confluent Cloud Kafka clusters and Flink compute pools for real-time processing and analysis.</p>
 
 ![alt text](./assets/architecture.png)
@@ -27,15 +27,14 @@ a. Software:
 b. Access:
     1. Confluent Cloud Account Access 
     2. Google Cloud / Qwiklabs Account Access
-    3. Gemini API Key - [https://ai.google.dev/gemini-api/docs](https://ai.google.dev/gemini-api/docs)
-    4. NewsAPI API Key - [https://newsapi.org/register](https://newsapi.org/register)
+    3. NewsAPI API Key - https://newsapi.org/register
 ```
 
 ### **Setup**
 
-<p> Signup to Confluent Cloud and MongoDB Atlas for Cloud Access </p>
+<p> Signup to Confluent Cloud and ensure you have qwiklabs google cloud access </p>
 
-<p> <b>Note:</b> Get your own News API key for free on the given URL. For Gemini API Key, if you don't have any existing account, you can use your own API key for free, else please reach out to workshop owners to get one.</p>
+<p> <b>Note:</b> Get your own News API key for free on the given URL.</p>
 
 ### Authenticate your Google Cloud account
 ```
@@ -52,7 +51,6 @@ gcloud auth application-default login
 
 export TF_VAR_cc_cloud_api_key="<Confluent Cloud API Key>"
 export TF_VAR_cc_cloud_api_secret="<Confluent Cloud API Secret>"
-export TF_VAR_gemini_api_key="<Gemini API Key - https://ai.google.dev/gemini-api/docs>"
 export TF_VAR_newsapi_api_key="<NewsAPI Key - https://newsapi.org/register>"
 export TF_VAR_company_of_interest="<Company to use for analysis>"
 export TF_VAR_identifier="<Unique Identifier your name/team name[In small caps]>"
@@ -71,7 +69,6 @@ export TF_VAR_project_id="<GCP project ID>"
 # app/scripts/frontend_app.sh
 
 export CC_KAFKA_RAW_PROMPT_TOPIC=
-export CC_KAFKA_PROMPT_RESPONSE_TOPIC=
 export CC_CLUSTER_KAFKA_URL=
 export CC_CLUSTER_API_KEY=
 export CC_CLUSTER_API_SECRET=
@@ -115,6 +112,10 @@ export CC_CLUSTER_API_SECRET=
 export CC_CLUSTER_SR_URL=
 export CC_CLUSTER_SR_USER=
 export CC_CLUSTER_SR_PASS=
+export LOCATION=
+export PROJECT=
+export INDEX_ENDPOINT=
+export DEPLOYED_INDEX_ID=
 ```
 
 <p><b>Note:</b>If you find any differences between outputs.txt and the above variables, please check the step 1 and re-run step 2</p>
@@ -126,7 +127,7 @@ export CC_CLUSTER_SR_PASS=
 ```
 <p>Successfull execution of this script will result in creation of an application build in <b>app/</b> directory and <b>.venv</b> directory created with python requirements in the root.
 
-<p><b>Note:</b> If you are able to reach till this stage, then you are ready to run the kafka client python application, the four apps that we are gonna run are:<br/><br/>1. <b>frontend_app.sh:</b> Responsible for providing CLI for producing question as raw prompt and consuming the response as answers. <br/><br/>2. <b>market_news_scrapper.sh:</b> Responsible for scrapping the market news for the given company and produce to kafka as raw context. <br/><br/>3. <b>news_embedding_client.sh:</b> Responsible for consuming and tokenization of raw context and producing the embedding of the given news article event which is further sinked to the MongoDB Atlas Vector Search Index.<br/><br/>4. <b>prompt_embedding_client.sh:</b> Responsible for consuming and tokenization of raw prompt, performing the vector search in the sinked index and retreiving top matching index ids. Furthermore, producing these index ids to kafka for further processing.</p>
+<p><b>Note:</b> If you are able to reach till this stage, then you are ready to run the kafka client python application, the three apps that we are gonna run are:<br/><br/>1. <b>frontend_app.sh:</b> Responsible for providing CLI for producing question as raw prompts. <br/><br/>2. <b>market_news_scrapper.sh:</b> Responsible for scrapping the market news for the given company and produce to kafka as raw context. <br/><br/>3. <b>prompt_embedding_client.sh:</b> Responsible for consuming and tokenization of raw prompt, performing the vector search in the sinked index and retreiving top matching index ids. Furthermore, producing these index ids to kafka for further processing.</p>
 
 
 ### **Knowledge Workflow**
@@ -135,8 +136,9 @@ export CC_CLUSTER_SR_PASS=
 ```bash
 ./app/scripts/market_news_scrapper.sh
 ```
+<p>2. Login to your confluent cloud account to see the different resources deployed on your environment.Make a not of your environment id</p>
 
-<p>2. In a different terminal, run:</p>
+<p>3. In a different terminal, run:</p>
 
 ```bash
 confluent login --save 
@@ -148,6 +150,7 @@ confluent flink connection create vertexai-embedding-connection  --cloud GCP \
 --service-key "$(cat confluent/credentials/service_account_key.json)"
 ```
 
+<p>3. Log in to your confluent cloud env and access flink workspace(UI tool to run your flinksql queries) to run following queries:</p>
 
 ```sql
 CREATE MODEL EMBEDDING_MODEL
@@ -387,12 +390,13 @@ SELECT * FROM `KnowledgeInfusedPrompt` ;
 <p>1. Create a flink sql connection to latest gemini model, similar to how we created for the embedding model</p>
 
 ```sql
-confluent flink connection create googleai-connection
+confluent flink connection create gemini-flash-connection \
 --cloud GCP \
 --region us-central1 \
---type googleai \
---endpoint https://generativelanguage.googleapis.com/v1beta/models/gemini-1.5-flash-latest:generateContent \
---api-key <Gemini API Key>
+--type vertexai \
+--endpoint https://us-central1-aiplatform.googleapis.com/v1/projects/<YOUR_PROJECT_ID>/locations/us-central1/publishers/google/models/gemini-1.5-flash-002:generateContent \
+--service-key "$(cat confluent/credentials/service_account_key.json)"
+
 ```
 
 <p>2. Create a model with the above connection which will help to generate a text based response.</p>
@@ -402,10 +406,10 @@ CREATE MODEL RESPONSE_ML_MODEL
 INPUT (`text` STRING)
 OUTPUT (`output` STRING)
 WITH (
-  'googleai.connection' = 'googleai-connection',
-  'googleai.client_timeout' = '120',
-  'googleai.system_prompt' = 'Answer the below question based on given related info .',
-  'provider' = 'googleai',
+  'vertexai.connection' = 'gemini-flash-connection',
+  'vertexai.client_timeout' = '120',
+  'vertexai.system_prompt' = 'Answer the below question based on given related info .',
+  'provider' = 'vertexai',
   'task' = 'text_generation'
 );
 ```
@@ -413,7 +417,7 @@ WITH (
 <p>3. Run a ML_PREDICT on the above model with knowledge infused prompt generated in the previous steps. </p>
 
 ```sql
-SELECT id,prompt,output as response
+SELECT CAST(id AS BYTES),id,prompt,output as response
 FROM <Knowledge_Infused_Prompt_Topic_Name>,
 LATERAL TABLE(
     ML_PREDICT(
@@ -451,7 +455,6 @@ export COMPANY_OF_INTEREST= # Type the other company of interest.
 ```bash
 export TF_VAR_cc_cloud_api_key="<Confluent Cloud API Key>"
 export TF_VAR_cc_cloud_api_secret="<Confluent Cloud API Secret>"
-export TF_VAR_gemini_api_key="<Gemini API Key - https://ai.google.dev/gemini-api/docs>"
 export TF_VAR_newsapi_api_key="<NewsAPI Key - https://newsapi.org/register>"
 export TF_VAR_company_of_interest="<Company to use for analysis>"
 export TF_VAR_identifier="<Unique Identifier your name/team name[In small caps]>"

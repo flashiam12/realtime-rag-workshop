@@ -24,7 +24,6 @@ provider "confluent" {
 
 variable "cc_cloud_api_key" {}
 variable "cc_cloud_api_secret" {}
-variable "gemini_api_key" {}
 variable "newsapi_api_key" {}
 variable "company_of_interest" {}
 variable "identifier" {}
@@ -39,7 +38,6 @@ module "stage1" {
   source = "./stage-gcp"
   cc_cloud_api_key = var.cc_cloud_api_key
   cc_cloud_api_secret = var.cc_cloud_api_secret
-  gemini_api_key = var.gemini_api_key
   newsapi_api_key = var.newsapi_api_key
   company_of_interest = var.company_of_interest
   identifier = var.identifier
@@ -57,7 +55,6 @@ module "stage2" {
   service_account_display_name=module.stage1.service_account_display_name
   cc_cloud_api_key = var.cc_cloud_api_key
   cc_cloud_api_secret = var.cc_cloud_api_secret
-  gemini_api_key = var.gemini_api_key
   newsapi_api_key = var.newsapi_api_key
   company_of_interest = var.company_of_interest
   identifier = var.identifier

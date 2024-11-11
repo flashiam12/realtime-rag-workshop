@@ -2,7 +2,6 @@
 
 export TF_VAR_cc_cloud_api_key="<Confluent Cloud API Key>"
 export TF_VAR_cc_cloud_api_secret="<Confluent Cloud API Secret>"
-export TF_VAR_gemini_api_key="<Gemini API Key - https://ai.google.dev/gemini-api/docs>"
 export TF_VAR_newsapi_api_key="<NewsAPI Key - https://newsapi.org/register>"
 export TF_VAR_company_of_interest="<Company to use for analysis>"
 export TF_VAR_identifier="<Unique Identifier your name/team name[In small caps]>"
