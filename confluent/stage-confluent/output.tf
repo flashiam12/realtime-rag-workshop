@@ -37,7 +37,6 @@ resource "null_resource" "default_output" {
       echo "GCP_SERVICE_ACCOUNT_KEY_PATH='./credentials/service_account_key.json'" >> outputs.txt
       echo "" >> outputs.txt
       echo "# External APIs" >> outputs.txt
-      echo "GEMINI_APIKEY='${var.gemini_api_key}'" >> outputs.txt
       echo "NEWSAPI_APIKEY='${var.newsapi_api_key}'" >> outputs.txt
     EOT
   }
