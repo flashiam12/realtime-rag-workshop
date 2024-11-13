@@ -28,36 +28,35 @@ variable "newsapi_api_key" {}
 variable "company_of_interest" {}
 variable "identifier" {}
 variable "project_id" {}
+variable "vertex_ai_index_endpoint" {}
+
+# Provisoned with Qwiklabs 
+# module "stage1" {
+#   providers = {
+#     google = google
+#   }
+#
+#   source = "./stage-gcp"
+#   cc_cloud_api_key = var.cc_cloud_api_key
+#   cc_cloud_api_secret = var.cc_cloud_api_secret
+#   newsapi_api_key = var.newsapi_api_key
+#   company_of_interest = var.company_of_interest
+#   identifier = var.identifier
+#   project_id = var.project_id
+# }
 
 
-module "stage1" {
-  providers = {
-    google = google
-  }
-
-  source = "./stage-gcp"
-  cc_cloud_api_key = var.cc_cloud_api_key
-  cc_cloud_api_secret = var.cc_cloud_api_secret
-  newsapi_api_key = var.newsapi_api_key
-  company_of_interest = var.company_of_interest
-  identifier = var.identifier
-  project_id = var.project_id
-  
-
-}
 
 module "stage2" {
   providers = {
     confluent = confluent
   }
   source = "./stage-confluent"
-  vertex_ai_index_endpoint=module.stage1.vertex_ai_index_endpoint
-  service_account_display_name=module.stage1.service_account_display_name
+  vertex_ai_index_endpoint=var.vertex_ai_index_endpoint
   cc_cloud_api_key = var.cc_cloud_api_key
   cc_cloud_api_secret = var.cc_cloud_api_secret
   newsapi_api_key = var.newsapi_api_key
   company_of_interest = var.company_of_interest
   identifier = var.identifier
   project_id = var.project_id
-  depends_on = [module.stage1]
 }

@@ -10,7 +10,7 @@
 <p><b>Real-World Application:</b> We'll apply these techniques to build a sentiment analysis pipeline, demonstrating how to extract insights from financial data and market news in real-time.</p>
 
 ## Architecture
-<p><img src="confluent/stage-gcp/instructions/img/architecture.png" alt="nim" /></p>
+<p><img src="img/architecture.png" alt="nim" /></p>
 
 ## What you will learn
 <p><b>Key Takeaways:</b> Participants will gain practical experience with Confluent's <b>Connect, Process, Stream</b> paradigm, enabling them to build and deploy their own real-time RAG pipelines using vertex's vector search vector database and Gemini endpoints. This workshop not only provides a stepping stone towards Confluent certification but also unlocks new possibilities for real-time data analysis and decision-making.</p>
@@ -21,7 +21,7 @@
 ![[/fragments/gcpconsole]]
 
 ### Download a key for your service account mentioned in the qwiklabs console and save it for later use. 
-<p><img src="confluent/stage-gcp/instructions/img/sa.png" alt="nim" /></p>
+<p><img src="img/sa.png" alt="nim" /></p>
 
 ## Requirements
 - **Local Software Requirements:** 
@@ -35,9 +35,9 @@
     - [Sign up for Confluent Cloud](https://www.confluent.io/get-started/)
 <p> <b>Note:</b> Get your own News API key for free on the given URL.</p>
 <p> <b>Note:</b> Please work with your workshop coordinators to get a promo code and follow below steps to apply it.</p>
-1. Create your first cluster and continue <img src="confluent/stage-gcp/instructions/img/cluster.png" alt="nim" /></p>
-2. Please click on "click_here" link on the UI to enter a promo code <img src="confluent/stage-gcp/instructions/img/paywall.png" alt="nim" /></p>
-3. Enter the promo code supplied by your workshop administrators <img src="confluent/stage-gcp/instructions/img/promo.png" alt="nim" /></p>
+1. Create your first cluster and continue <img src="img/cluster.png" alt="nim" /></p>
+2. Please click on "click_here" link on the UI to enter a promo code <img src="img/paywall.png" alt="nim" /></p>
+3. Enter the promo code supplied by your workshop administrators <img src="img/promo.png" alt="nim" /></p>
 
 ## **Workshop Repo Setup** 
 
@@ -47,7 +47,7 @@ git clone https://github.com/flashiam12/realtime-rag-workshop.git
 ```
 2. ### Create a Cloud API Key
 Create cloud api key for your confluent cloud account with resource scope as Cloud resource management.
-<p><img src="confluent/stage-gcp/instructions/img/apikey.png" alt="nim" /></p>
+<p><img src="img/apikey.png" alt="nim" /></p>
 
 3. ### Setup environment variables
 
