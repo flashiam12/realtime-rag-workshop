@@ -33,7 +33,6 @@ resource "null_resource" "default_output" {
       echo "CC_FLINK_COMPUTE_POOL_ID='${confluent_flink_compute_pool.default.id}'" >> outputs.txt
       echo "" >> outputs.txt
       echo "# Google Cloud" >> outputs.txt
-      echo "GCP_SERVICE_ACCOUNT='${var.service_account_display_name}'" >> outputs.txt
       echo "GCP_SERVICE_ACCOUNT_KEY_PATH='./credentials/service_account_key.json'" >> outputs.txt
       echo "" >> outputs.txt
       echo "# External APIs" >> outputs.txt
