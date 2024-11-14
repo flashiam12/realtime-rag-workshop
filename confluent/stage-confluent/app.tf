@@ -78,7 +78,7 @@ resource "local_file" "prompt_embedding_client" {
     LOCATION                            = "us-central1"
     PROJECT                             = "${var.project_id}"
     INDEX_ENDPOINT                      = "${var.vertex_ai_index_endpoint}"
-    DEPLOYED_INDEX_ID                   = "${var.identifier}_workshop_deployed_index"
+    DEPLOYED_INDEX_ID                   = "workshop_deployed_index"
   })
   filename = "${local.app_script_path}/prompt_embedding_client.sh"
 }
