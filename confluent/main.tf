@@ -14,7 +14,7 @@ terraform {
 
 provider "google" {
   project = var.project_id
-  region  = "us-central1"
+  region  = var.project_region
 }
 
 provider "confluent" {
@@ -29,6 +29,7 @@ variable "company_of_interest" {}
 variable "identifier" {}
 variable "project_id" {}
 variable "vertex_ai_index_endpoint" {}
+variable "project_region" {}
 
 # Provisoned with Qwiklabs 
 # module "stage1" {
@@ -59,4 +60,5 @@ module "stage2" {
   company_of_interest = var.company_of_interest
   identifier = var.identifier
   project_id = var.project_id
+  project_region = var.project_region
 }

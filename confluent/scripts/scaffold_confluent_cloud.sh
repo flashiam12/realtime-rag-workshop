@@ -5,8 +5,8 @@ export TF_VAR_newsapi_api_key="<NewsAPI Key - https://newsapi.org/register>"
 export TF_VAR_company_of_interest="<Company to use for analysis>"
 export TF_VAR_identifier="<Unique Identifier your name/team name[In small caps]>"
 export TF_VAR_project_id="<Copy your GCP projectid from Qwiklabs console.>"
-export TF_VAR_vertex_ai_index_endpoint="<Copy your vertexai Index endpoint id from Qwiklabs console."
-export TF_VAR_project_region="<Copy your vertexai Index endpoint id from Qwiklabs console."
+export TF_VAR_vertex_ai_index_endpoint="<Copy your vertexai Index endpoint id from Qwiklabs console.>"
+export TF_VAR_project_region="<Copy your google cloud project region from Qwiklabs console.>"
 
 cd confluent
 terraform init

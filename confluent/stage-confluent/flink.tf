@@ -2,7 +2,7 @@ data "confluent_organization" "default" {}
 
 data "confluent_flink_region" "default" {
   cloud   = "GCP"
-  region  = "us-central1"
+  region  = "${var.project_region}"
 }
 
 resource "confluent_role_binding" "environment-admin" {
@@ -14,7 +14,7 @@ resource "confluent_role_binding" "environment-admin" {
 resource "confluent_flink_compute_pool" "default" {
   display_name     = "sentiment_analysis_pipeline_pool"
   cloud            = "GCP"
-  region           = "us-central1"
+  region           = "${var.project_region}"
   max_cfu          = 10
   environment {
     id = confluent_environment.default.id

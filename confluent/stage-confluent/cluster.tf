@@ -17,7 +17,7 @@ resource "confluent_kafka_cluster" "default" {
   display_name = "sentiment_analysis"
   availability = "SINGLE_ZONE"
   cloud        = "GCP"
-  region       = "us-central1"
+  region       = "${var.project_region}"
   standard {}
 
   environment {

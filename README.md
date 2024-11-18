@@ -13,31 +13,61 @@
 <p><img src="confluent/stage-gcp/instructions/img/architecture.png" alt="nim" /></p>
 
 ## What you will learn
-<p><b>Key Takeaways:</b> Participants will gain practical experience with Confluent's <b>Connect, Process, Stream</b> paradigm, enabling them to build and deploy their own real-time RAG pipelines using vertex's vector search vector database and Gemini endpoints. This workshop not only provides a stepping stone towards Confluent certification but also unlocks new possibilities for real-time data analysis and decision-making.</p>
-
-## **Qwiklabs Setup** 
-![[/fragments/startqwiklab]]
-
-![[/fragments/gcpconsole]]
-
-### Download a key for your service account mentioned in the qwiklabs console and save it for later use. 
-<p><img src="confluent/stage-gcp/instructions/img/sa.png" alt="nim" /></p>
+<p><b>Key Takeaways:</b> Participants will gain practical experience with Confluent's <b>Connect, Process, Stream</b> paradigm, enabling them to build and deploy their own real-time RAG pipelines using <b>Google's VertexAI Capablities</b> and <b>Gemini endpoints</b>. This workshop not only provides a stepping stone towards Confluent certification but also unlocks new possibilities for real-time data analysis and decision-making.</p>
 
 ## Requirements
 - **Local Software Requirements:** 
     - Python3 > 3.9
-    - Terraform CLI
-    - Confluent Cloud CLI
-    - Google Cloud CLI
+    - [Terraform CLI](https://developer.hashicorp.com/terraform/install)
+    - [Confluent Cloud CLI](https://docs.confluent.io/confluent-cli/current/install.html)
+    - [Google Cloud CLI](https://cloud.google.com/sdk/docs/install)
+
 - **Access to below platforms:**
     - Qwiklabs Account Access
-    - [Setup NewsAPI API Key](https://newsapi.org/register) 
-    - [Sign up for Confluent Cloud](https://www.confluent.io/get-started/)
+    - Register for a [News API key](https://newsapi.org/register) and save the value for further use.
+
 <p> <b>Note:</b> Get your own News API key for free on the given URL.</p>
 <p> <b>Note:</b> Please work with your workshop coordinators to get a promo code and follow below steps to apply it.</p>
-1. Create your first cluster and continue <img src="confluent/stage-gcp/instructions/img/cluster.png" alt="nim" /></p>
-2. Please click on "click_here" link on the UI to enter a promo code <img src="confluent/stage-gcp/instructions/img/paywall.png" alt="nim" /></p>
-3. Enter the promo code supplied by your workshop administrators <img src="confluent/stage-gcp/instructions/img/promo.png" alt="nim" /></p>
+
+- **Sign up for Confluent Cloud**
+    - Navigate to [Confluent Cloud Sign Up](https://confluent.cloud/signup).
+    - Sign up with any of the desired identity providers or your email ID.
+        <p><img src="confluent/stage-gcp/instructions/img/signup.png" alt="sign-up" width="300" /></p>
+    - Finish creating your account by filling in a couple of details.
+        <p><img src="confluent/stage-gcp/instructions/img/finish.png" alt="finish" width="300" /></p>
+    - Click on skip for adding your teammates for now. Feel free to add your teammates at a later point in time.
+        <p><img src="confluent/stage-gcp/instructions/img/finish.png" alt="finish" width="300" /></p>
+    - Answer a couple of questions, and you are set to create your first cluster!
+        <p><img src="confluent/stage-gcp/instructions/img/questions.png" alt="questions" width="300" /></p>
+    - Click on "Next" to create a cluster and enter promo code details.
+        <p><img src="confluent/stage-gcp/instructions/img/cluster.png" alt="cluster" width="300" /></p>
+    - Please click on the "click_here" link on the UI to enter a promo code.
+        <p><img src="confluent/stage-gcp/instructions/img/paywall.png" alt="paywall" width="300" /></p>
+    - Enter the promo code supplied by your workshop administrators.
+        <p><img src="confluent/stage-gcp/instructions/img/promo.png" alt="promo" width="300" /></p>
+
+## **Qwiklabs Setup** 
+
+### Download a key for your service account. 
+1. List down the service accounts in the gcloud shell.
+```bash
+gcloud iam service-accounts list
+```
+2. Create Key file for the “Qwiklabs User Service Account” mentioned in your qwiklabs console
+```bash
+gcloud iam service-accounts keys create service_account_key.json \
+    --iam-account=SA_NAME@PROJECT_ID.iam.gserviceaccount.com
+```
+3. Click on the three dots of gcloud shell to download service_account_key.json to local.
+    <p><img src="confluent/stage-gcp/instructions/img/download.png" alt="nim" width="300" /></p>
+4. Download the file service_account_key.json from your home directory and save it for further use.
+    <p><img src="confluent/stage-gcp/instructions/img/service_account_key.png" alt="nim" width="300" /></p>
+5. Alternatively you can also create a key using the Google Cloud UI with below steps:
+    - Go to IAM → Service accounts 
+    - Find the service account listed on the right named “Qwiklabs User Service Account” 
+    - Click on Create Key and store the key in your computer.
+    <p><img src="confluent/stage-gcp/instructions/img/sa.png" alt="nim" width="300" /></p>
+
 
 ## **Workshop Repo Setup** 
 
@@ -45,15 +75,28 @@
 ```bash
 git clone https://github.com/flashiam12/realtime-rag-workshop.git 
 ```
+
+```bash
+cd realtime-rag-workshop
+```
 2. ### Create a Cloud API Key
 Create cloud api key for your confluent cloud account with resource scope as Cloud resource management.
-<p><img src="confluent/stage-gcp/instructions/img/apikey.png" alt="nim" /></p>
+    * Go to https://confluent.cloud/settings/api-keys 
+    * Add API Key 
+    * Cloud resource management 
+    * Download API Key 
+
+<p><img src="confluent/stage-gcp/instructions/img/apikey.png" alt="nim" width="300" /></p>
 
 3. ### Setup environment variables
 
-**Copy the contents service account key json downloaded in the previous section and paste it in the file `confluent/credentials/service_account_key.json`. This will be referenced by terraform for creating connectors and flink connections.**
+1. Move the service account key JSON file (downloaded in the Qwiklabs Setup section) to the confluent/credentials directory. This file will be used by Terraform to create connectors and Flink connections. Make sure to replace PATH_TO_DOWNLOADS with the actual path to your downloads directory where the JSON file is stored.
 
-1. Navigate to <b>confluent/scripts/scaffold_confluent_cloud.sh</b> and edit the following:
+```bash
+mv $PATH_TO_DOWNLOADS/service_account_key.json confluent/credentials/service_account_key.json
+```
+
+2. Navigate to <b>confluent/scripts/scaffold_confluent_cloud.sh</b> and edit the following:
 
 ```bash
 # confluent/scripts/scaffold_confluent_cloud.sh
@@ -66,16 +109,16 @@ export TF_VAR_company_of_interest="<Company to use for analysis>"
 export TF_VAR_identifier="<Unique Identifier your name/team name[In small caps]>"
 export TF_VAR_project_id="<Copy your GCP projectid from Qwiklabs console.>"
 export TF_VAR_vertex_ai_index_endpoint="<Copy your vertexai Index endpoint id from Qwiklabs console."
-export TF_VAR_project_region="<Copy your vertexai Index endpoint id from Qwiklabs console."
+export TF_VAR_project_region="<Copy your GCP Project Region from Qwiklabs Console"
 ```
 
-2. After Setting the variables, run:
+3. After Setting the variables, run:
 
 ```bash
 ./confluent/scripts/scaffold_confluent_cloud.sh
 ```
 
-3. Successfull execution of the above script will result in: <br/><br/>a. A file named <b>confluent/outputs.txt</b> being created. <br/> b. Three bash scripts created for each kafka client in <b>app/scripts</b> <br/><br/> Verify the bash scripts env variables and their values from the outputs.txt
+4. Successfull execution of the above script will result in: <br/><br/>a. A file named <b>confluent/outputs.txt</b> being created. <br/> b. Three bash scripts created for each kafka client in <b>app/scripts</b> <br/><br/> Verify the bash scripts env variables and their values from the outputs.txt
 
 ```bash
 # app/scripts/frontend_app.sh
@@ -121,7 +164,7 @@ export DEPLOYED_INDEX_ID=
 
 <p><b>Note:</b>If you find any differences between outputs.txt and the above variables, please check the step 1 and re-run step 2</p>
 
-4. ### Setup the python runtime environment, run:
+5. ### Setup the python runtime environment, run:
 
 ```bash
 ./app/scripts/setup_python_app.sh
@@ -151,7 +194,7 @@ confluent use env --<YOUR_ENVIRONMENT_ID>
 Create a FlinkSQL connection to connect to gemini text embedding model.Please enter <YOUR_PROJECT_REGION> and <YOUR_PROJECT_ID> before running the command.
 ```bash
 confluent flink connection create vertexai-embedding-connection  --cloud GCP \
---region us-central1 \
+--region <YOUR_PROJECT_REGION> \
 --type vertexai \
 --endpoint https://<YOUR_PROJECT_REGION>-aiplatform.googleapis.com/v1/projects/<YOUR_PROJECT_ID>/locations/<YOUR_PROJECT_REGION>/publishers/google/models/text-embedding-004:predict \
 --service-key "$(cat confluent/credentials/service_account_key.json)"
@@ -170,7 +213,7 @@ WITH (
   'task' = 'embedding'
 );
 ```
-
+Refer to outputs.txt to replace <CC_KAFKA_EMBEDDING_NEWS_TOPIC> value before running the command.
 ```sql
 INSERT INTO `<CC_KAFKA_EMBEDDING_NEWS_TOPIC>`
 SELECT CAST(id AS BYTES),id,`output` as knowledge_embedding,published_at,`source` FROM ContextRaw, 
@@ -187,13 +230,19 @@ LATERAL TABLE(
 ```
 
 
-5. Verify the data in the respective topics - **$CC_KAFKA_RAW_NEWS_TOPIC** and **$CC_KAFKA_EMBEDDING_NEWS_TOPIC**. Also, check if the Context Sink Connector(Cloud Function Sink Connector) is healthy and running in connector section on Confluent Cloud.
+5. Verify the data in the respective topics - **CC_KAFKA_RAW_NEWS_TOPIC** and **CC_KAFKA_EMBEDDING_NEWS_TOPIC**. Also, check if the Context Sink Connector(Cloud Function Sink Connector) is healthy and running in connector section on Confluent Cloud.
 
 6. Verify the data sinked to VertexAI Vector Search using the success topic success-lcc-[...]. 
 
 7. This completes your knowledge workflow.Now we have context data stored into vector search and pipeline for upcoming real time context.
 
 ## Task 2: Setup the Inference Workflow
+
+### Authenticate your Qwiklabs Google Cloud account
+```
+gcloud auth application-default login  
+
+```
 
 ## Subtask 2.1: Retrieval
 
@@ -214,7 +263,7 @@ LATERAL TABLE(
 
 
 3. Now let's setup a function which creates embeddings for the prompts entered in the above step. Go to the FlinkSQL workspace and run the below query utilizing embedding model created in knowledge workflow.
-
+Refer to outputs.txt to replace <CC_PROMPT_EMBEDDING_TOPIC> and <CC_KAFKA_RAW_PROMPT_TOPIC>  value before running the command.
 ```sql
 INSERT INTO `<CC_PROMPT_EMBEDDING_TOPIC>`
 SELECT CAST(id AS BYTES),`output` as embedding_vector,id,prompt,`timestamp` FROM `<CC_KAFKA_RAW_PROMPT_TOPIC>`, 
@@ -226,7 +275,7 @@ LATERAL TABLE(
     )
 );
 ```
-4. Verify the data in the respective topics **$CC_PROMPT_EMBEDDING_TOPIC** and **$CC_KAFKA_PROMPT_CONTEXTINDEX_TOPIC**
+4. Verify the data in the respective topics **CC_PROMPT_EMBEDDING_TOPIC** and **CC_KAFKA_PROMPT_CONTEXTINDEX_TOPIC**
 
 5. Open up the flinkSQL workspace on to the confluent UI:
 
@@ -238,6 +287,7 @@ SHOW TABLES;
 
 7. Check the data present in the promptcontextindex table (containing matched index ids against the prompt) and raw context table (containing the actual text against index ids), run:
 
+Refer to outputs.txt to replace <CC_KAFKA_RAW_NEWS_TOPIC> and <CC_KAFKA_PROMPT_CONTEXTINDEX_TOPIC> value before running the command.
 ```sql
 SELECT * FROM `<CC_KAFKA_RAW_NEWS_TOPIC>`;
 
@@ -387,19 +437,19 @@ where row_num<=1;
 ```sql
 SELECT * FROM `KnowledgeInfusedPrompt` ;
 ```
+<p><b>Note:</b> Incase you do not see see results in `KnowledgeInfusedPrompt` topic please input a couple of prompts to ensure a continuous stream of events on the input side [Frontend Setup](#subtask-21-retrieval) so that windowed aggregations can progress effectively, as they rely on a steady flow of data to advance the timestamps.</p>
 
 ## Subtask 2.3: Generation
 
 <p>Now we have obtained the full context for the prompt we have inserted , the next task is to feed this input to a ML_MODEL to get a desired response for the given prompt with the help of the obtained conext. Let's follow the below series to execute this</p>
 
-1. Create a flink sql connection to latest gemini model, similar to how we created for the embedding model.
-
+1. Create a flink sql connection to latest gemini model, similar to how we created for the embedding model.Please enter <YOUR_PROJECT_REGION> and <YOUR_PROJECT_ID> before running the command.
 ```sql
 confluent flink connection create gemini-flash-connection \
 --cloud GCP \
---region us-central1 \
+--region <YOUR_PROJECT_REGION> \
 --type vertexai \
---endpoint https://us-central1-aiplatform.googleapis.com/v1/projects/<YOUR_PROJECT_ID>/locations/us-central1/publishers/google/models/gemini-1.5-flash-002:generateContent \
+--endpoint https://<YOUR_PROJECT_REGION>-aiplatform.googleapis.com/v1/projects/<YOUR_PROJECT_ID>/locations/<YOUR_PROJECT_REGION>/publishers/google/models/gemini-1.5-flash-002:generateContent \
 --service-key "$(cat confluent/credentials/service_account_key.json)"
 
 ```
@@ -420,8 +470,9 @@ WITH (
 ```
 
 3. Run a ML_PREDICT on the above model with knowledge infused prompt generated in the previous steps. 
-
+Refer to outputs.txt to replace <CC_RESPONSE_TOPIC> value before running the command.
 ```sql
+INSERT INTO `<CC_RESPONSE_TOPIC>` 
 SELECT CAST(id AS BYTES),id,prompt,output as response
 FROM <Knowledge_Infused_Prompt_Topic_Name>,
 LATERAL TABLE(
@@ -438,11 +489,6 @@ LATERAL TABLE(
 );
 ```
 
-4. Check outputs.txt to see value for <CC_RESPONSE_TOPIC>
-```sql
-INSERT INTO `<CC_RESPONSE_TOPIC>` 
--- Copy the above select statement here.
-```
 <p><b>Note:</b> You may now play around by scraping other companies information as well by just changing the following:
 
 
@@ -463,12 +509,15 @@ export TF_VAR_company_of_interest= # Type the other company of interest.
 1. Define the following env variables in the file <b>confluent/scripts/teardown_confluent_cloud.sh</b>
 
 ```bash
+#! /bin/bash 
 export TF_VAR_cc_cloud_api_key="<Confluent Cloud API Key>"
 export TF_VAR_cc_cloud_api_secret="<Confluent Cloud API Secret>"
 export TF_VAR_newsapi_api_key="<NewsAPI Key - https://newsapi.org/register>"
 export TF_VAR_company_of_interest="<Company to use for analysis>"
 export TF_VAR_identifier="<Unique Identifier your name/team name[In small caps]>"
-export TF_VAR_project_id="<GCP project ID>"
+export TF_VAR_project_id="<Copy your GCP projectid from Qwiklabs console.>"
+export TF_VAR_vertex_ai_index_endpoint="<Copy your vertexai Index endpoint id from Qwiklabs console."
+export TF_VAR_project_region="<Copy your GCP Project Region"
 ```
 
 <p>2. Run the teardown script:</p>
@@ -488,7 +537,3 @@ export TF_VAR_project_id="<GCP project ID>"
 
 Be sure to check out the following articles for more information:
 
-![[/fragments/TrainingCertificationOverview]]
-
-
-![[/fragments/copyright]]

@@ -75,7 +75,7 @@ resource "local_file" "prompt_embedding_client" {
     CC_CLUSTER_SR_URL                   = "${replace(data.confluent_schema_registry_cluster.default.rest_endpoint, "https://", "")}",
     CC_CLUSTER_SR_USER                  = "${confluent_api_key.schema-registry-api-key.id}",
     CC_CLUSTER_SR_PASS                  = "${confluent_api_key.schema-registry-api-key.secret}"
-    LOCATION                            = "us-central1"
+    LOCATION                            = "${var.project_region}"
     PROJECT                             = "${var.project_id}"
     INDEX_ENDPOINT                      = "${var.vertex_ai_index_endpoint}"
     DEPLOYED_INDEX_ID                   = "workshop_deployed_index"
