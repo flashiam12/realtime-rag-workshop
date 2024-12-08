@@ -3,7 +3,7 @@ import json
 from ..utils.clients import KafkaConsumer, KafkaProducer
 from ..utils.types import ContextRaw, ContextEmbedding
 from ..utils.schemas import context_raw_schema_str, context_embedding_schema_str
-from ..knowledge.vars import KNOWLEDGE_RAW_NEWS_TOPIC, KNOWLEDGE_EMBEDDING_NEWS_TOPIC, CC_BOOTSTRAP, CC_API_KEY, CC_API_SECRET, CC_SR_PASSWORD, CC_SR_USER, CC_SR_URL, KNOWLEDGE_OPENAI_APIKEY
+from ..knowledge.vars import KNOWLEDGE_RAW_NEWS_TOPIC, KNOWLEDGE_EMBEDDING_NEWS_TOPIC, CC_BOOTSTRAP, CC_API_KEY, CC_API_SECRET, CC_SR_PASSWORD, CC_SR_USER, CC_SR_URL
 
 
 def embedding(openai_api:str="None", content:str="None"):

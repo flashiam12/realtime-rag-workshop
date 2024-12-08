@@ -64,6 +64,24 @@ class PromptRaw(TopicBase):
                         prompt=obj.get("prompt"),
                         timestamp=obj.get("timestamp")
                         )
+
+class PromptEmbedding(TopicBase):
+    def __init__(self, id:str, prompt:str, timestamp: str,embedding_vector:List[float]) -> None:
+        self.prompt = prompt
+        self.timestamp = timestamp
+        self.embedding_vector = embedding_vector
+        super().__init__(id)
+    
+    @staticmethod
+    def dict_to_object_generator(obj:Dict, ctx):
+        if obj is None:
+            return None
+        return PromptEmbedding(
+                        id=obj.get("id"),
+                        prompt=obj.get("prompt"),
+                        embedding_vector=obj.get("embedding_vector"),
+                        timestamp=obj.get("timestamp")
+                        )
     
 class PromptContextIndex(TopicBase):
     def __init__(self, id:str, prompt:str, context_indexes:List[str], timestamp: str) -> None:

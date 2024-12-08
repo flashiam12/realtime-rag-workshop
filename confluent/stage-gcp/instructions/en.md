@@ -10,7 +10,7 @@
 <p><b>Real-World Application:</b> We'll apply these techniques to build a sentiment analysis pipeline, demonstrating how to extract insights from financial data and market news in real-time.</p>
 
 ## Architecture
-<p><img src="confluent/stage-gcp/instructions/img/architecture.png" alt="nim" /></p>
+<p><img src="img/architecture.png" alt="nim" /></p>
 
 ## What you will learn
 <p><b>Key Takeaways:</b> Participants will gain practical experience with Confluent's <b>Connect, Process, Stream</b> paradigm, enabling them to build and deploy their own real-time RAG pipelines using <b>Google's VertexAI Capablities</b> and <b>Gemini endpoints</b>. This workshop not only provides a stepping stone towards Confluent certification but also unlocks new possibilities for real-time data analysis and decision-making.</p>
@@ -32,21 +32,26 @@
 - **Sign up for Confluent Cloud**
     - Navigate to [Confluent Cloud Sign Up](https://confluent.cloud/signup).
     - Sign up with any of the desired identity providers or your email ID.
-        <p><img src="confluent/stage-gcp/instructions/img/signup.png" alt="sign-up" width="300" /></p>
+        <p><img src="img/signup.png" alt="sign-up" width="300" /></p>
     - Finish creating your account by filling in a couple of details.
-        <p><img src="confluent/stage-gcp/instructions/img/finish.png" alt="finish" width="300" /></p>
+        <p><img src="img/finish.png" alt="finish" width="300" /></p>
     - Click on skip for adding your teammates for now. Feel free to add your teammates at a later point in time.
-        <p><img src="confluent/stage-gcp/instructions/img/finish.png" alt="finish" width="300" /></p>
+        <p><img src="img/finish.png" alt="finish" width="300" /></p>
     - Answer a couple of questions, and you are set to create your first cluster!
-        <p><img src="confluent/stage-gcp/instructions/img/questions.png" alt="questions" width="300" /></p>
+        <p><img src="img/questions.png" alt="questions" width="300" /></p>
     - Click on "Next" to create a cluster and enter promo code details.
-        <p><img src="confluent/stage-gcp/instructions/img/cluster.png" alt="cluster" width="300" /></p>
+        <p><img src="img/cluster.png" alt="cluster" width="300" /></p>
     - Please click on the "click_here" link on the UI to enter a promo code.
-        <p><img src="confluent/stage-gcp/instructions/img/paywall.png" alt="paywall" width="300" /></p>
+        <p><img src="img/paywall.png" alt="paywall" width="300" /></p>
     - Enter the promo code supplied by your workshop administrators.
-        <p><img src="confluent/stage-gcp/instructions/img/promo.png" alt="promo" width="300" /></p>
+        <p><img src="img/promo.png" alt="promo" width="300" /></p>
 
 ## **Qwiklabs Setup** 
+![[/fragments/startqwiklab]]
+
+![[/fragments/gcpconsole]]
+
+![[/fragments/cloudshell]]
 
 ### Download a key for your service account. 
 1. List down the service accounts in the gcloud shell.
@@ -59,14 +64,14 @@ gcloud iam service-accounts keys create service_account_key.json \
     --iam-account=SA_NAME@PROJECT_ID.iam.gserviceaccount.com
 ```
 3. Click on the three dots of gcloud shell to download service_account_key.json to local.
-    <p><img src="confluent/stage-gcp/instructions/img/download.png" alt="nim" width="300" /></p>
+    <p><img src="img/download.png" alt="nim" width="300" /></p>
 4. Download the file service_account_key.json from your home directory and save it for further use.
-    <p><img src="confluent/stage-gcp/instructions/img/service_account_key.png" alt="nim" width="300" /></p>
+    <p><img src="img/service_account_key.png" alt="nim" width="300" /></p>
 5. Alternatively you can also create a key using the Google Cloud UI with below steps:
     - Go to IAM → Service accounts 
     - Find the service account listed on the right named “Qwiklabs User Service Account” 
     - Click on Create Key and store the key in your computer.
-    <p><img src="confluent/stage-gcp/instructions/img/sa.png" alt="nim" width="300" /></p>
+    <p><img src="img/sa.png" alt="nim" width="300" /></p>
 
 
 ## **Workshop Repo Setup** 
@@ -86,7 +91,7 @@ Create cloud api key for your confluent cloud account with resource scope as Clo
     * Cloud resource management 
     * Download API Key 
 
-<p><img src="confluent/stage-gcp/instructions/img/apikey.png" alt="nim" width="300" /></p>
+<p><img src="img/apikey.png" alt="nim" width="300" /></p>
 
 3. ### Setup environment variables
 
@@ -537,3 +542,7 @@ export TF_VAR_project_region="<Copy your GCP Project Region"
 
 Be sure to check out the following articles for more information:
 
+![[/fragments/TrainingCertificationOverview]]
+
+
+![[/fragments/copyright]]

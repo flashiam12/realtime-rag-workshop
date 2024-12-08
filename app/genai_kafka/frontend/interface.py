@@ -7,21 +7,6 @@ import uuid
 import time
 
 
-def response_collector():
-    kafka_consumer = BasicKafkaConsumer(
-                                        kafka_bootstrap=CC_BOOTSTRAP,
-                                        kafka_api_key=CC_API_KEY,
-                                        kafka_api_secret=CC_API_SECRET,
-                                        kafka_topic=FRONTEND_PROMPT_ANSWER_TOPIC
-                                       )
-    for message in kafka_consumer.poll_indefinately():
-        # print("poll started")
-        if message != {}:
-            print("")
-            print("")
-            print("**LLM Response**")
-            print("")
-            print(message.get("choices")[0].get("message", {}).get("content", ""))
     
 def prompt_emitter():
     kafka_producer = KafkaProducer(
@@ -35,19 +20,29 @@ def prompt_emitter():
                                     topic_value_sr_str=prompt_raw_schema_str
                                 )
 
-    user_input = input("Enter your prompt here (type 'exit' to quit): ")
-    if user_input.lower() == 'exit':
-        print("Exiting the app...")
-    prompt_raw = PromptRaw(
-        id = uuid.uuid1().__str__(),
-        prompt=user_input,
-        timestamp=datetime.datetime.now().strftime("%Y-%m-%dT%H:%M:%SZ")
-    )
-    kafka_producer.send(prompt_raw)
-    kafka_producer.flush()
-    time.sleep(10)
-    response_collector()
-    return 
+    while True:
+        # Capture user input
+        user_input = input("Enter your prompt here (type 'exit' to quit): ")
+        if user_input.lower() == 'exit':
+            print("Exiting the app...")
+            break  # Exit the loop to stop the producer
+
+        # Prepare the event data
+        prompt_raw = PromptRaw(
+            id=str(uuid.uuid1()),  # Generate a unique ID
+            prompt=user_input,
+            timestamp=datetime.datetime.now().strftime("%Y-%m-%dT%H:%M:%SZ")
+        )
+
+        # Send the event to Kafka
+        kafka_producer.send(prompt_raw)
+        kafka_producer.flush()
+        print("Message sent to Kafka:", prompt_raw)
+
+    # Close the producer after exiting
+    # kafka_producer.close()
+    print("Kafka producer closed.")
+    return
 
 def run():
     prompt_emitter()

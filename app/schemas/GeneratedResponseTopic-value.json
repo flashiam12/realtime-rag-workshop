@@ -1,0 +1,25 @@
+{
+    "$schema": "http://json-schema.org/draft-07/schema#",
+    "title": "PromptRaw-value",
+    "description": "Topic to collect response for individual prompt",
+    "type": "object",
+    "properties": {
+        "id": {
+            "description": "PromptRaw id",
+            "type": "string"
+        },
+        "prompt": {
+            "description": "PromptRaw prompt",
+            "type": "string"
+        },
+        "response": {
+            "description": "PromptRaw prompt",
+            "type": "string"
+        }
+    },
+    "required": [
+        "id",
+        "prompt",
+        "response"
+    ]
+}
