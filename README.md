@@ -10,7 +10,7 @@
 <p><b>Real-World Application:</b> We'll apply these techniques to build a sentiment analysis pipeline, demonstrating how to extract insights from financial data and market news in real-time.</p>
 
 ## Architecture
-<p><img src="confluent/stage-gcp/instructions/img/architecture.png" alt="nim" /></p>
+<p><img src="assets/img/architecture.png" alt="nim" /></p>
 
 ## What you will learn
 <p><b>Key Takeaways:</b> Participants will gain practical experience with Confluent's <b>Connect, Process, Stream</b> paradigm, enabling them to build and deploy their own real-time RAG pipelines using <b>Google's VertexAI Capablities</b> and <b>Gemini endpoints</b>. This workshop not only provides a stepping stone towards Confluent certification but also unlocks new possibilities for real-time data analysis and decision-making.</p>
