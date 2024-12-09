@@ -77,6 +77,7 @@ resource "local_file" "prompt_embedding_client" {
     CC_CLUSTER_SR_URL                   = "${replace(confluent_schema_registry_cluster.default.rest_endpoint, "https://", "")}",
     CC_CLUSTER_SR_USER                  = "${confluent_api_key.schema-registry-api-key.id}",
     CC_CLUSTER_SR_PASS                  = "${confluent_api_key.schema-registry-api-key.secret}",
+    CC_PROMPT_EMBEDDING_TOPIC           ="${confluent_kafka_topic.PromptEmbedding.topic_name}",
     MONGO_CLUSTER_SERVER_URL            = "${mongodbatlas_cluster.default.connection_strings[0].standard_srv}",
     MONGO_DATABASE_USER                 = "${local.mongo_workshop_database_user}",
     MONGO_DATABASE_PASSWORD             = "${local.mongo_workshop_database_pass}",

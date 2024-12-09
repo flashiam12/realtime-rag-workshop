@@ -13,3 +13,5 @@ prompt_raw_schema_str = schema_reader("app/schemas/PromptRaw-value.json")
 prompt_context_index_schema_str = schema_reader("app/schemas/PromptContextIndex-value.json")
 
 prompt_enriched_schema_str = schema_reader("app/schemas/PromptEnriched-value.json")
+
+prompt_embedding_schema_str = schema_reader("app/schemas/PromptEmbedding-value.json")

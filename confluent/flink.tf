@@ -15,7 +15,7 @@ resource "confluent_flink_compute_pool" "default" {
   display_name     = "sentiment_analysis_pipeline_pool"
   cloud            = "AWS"
   region           = "us-east-1"
-  max_cfu          = 5
+  max_cfu          = 20
   environment {
     id = confluent_environment.default.id
   }

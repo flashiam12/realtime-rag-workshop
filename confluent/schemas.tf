@@ -92,3 +92,42 @@ resource "confluent_schema" "PromptEnriched" {
     prevent_destroy = false
   }
 }
+
+resource "confluent_schema" "PromptEmbedding" {
+  schema_registry_cluster {
+    id = confluent_schema_registry_cluster.default.id
+  }
+  rest_endpoint = confluent_schema_registry_cluster.default.rest_endpoint
+  subject_name = "PromptEmbedding-value"
+  format = "JSON"
+  schema = file("../app/schemas/PromptEmbedding-value.json")
+  recreate_on_update = false
+  hard_delete = true
+  credentials {
+    key    = confluent_api_key.schema-registry-api-key.id
+    secret = confluent_api_key.schema-registry-api-key.secret
+  }
+  lifecycle {
+    prevent_destroy = false
+  }
+}
+
+resource "confluent_schema" "GeneratedResponseTopic" {
+  schema_registry_cluster {
+    id = confluent_schema_registry_cluster.default.id
+  }
+  rest_endpoint = confluent_schema_registry_cluster.default.rest_endpoint
+  subject_name = "GeneratedResponseTopic-value"
+  format = "JSON"
+  schema = file("../app/schemas/GeneratedResponseTopic-value.json")
+  recreate_on_update = false
+  hard_delete = true
+  credentials {
+    key    = confluent_api_key.schema-registry-api-key.id
+    secret = confluent_api_key.schema-registry-api-key.secret
+  }
+  lifecycle {
+    prevent_destroy = false
+  }
+  depends_on=[confluent_schema_registry_cluster.default]
+}
