@@ -47,31 +47,3 @@ resource "confluent_api_key" "flink-default" {
   depends_on = [ confluent_role_binding.environment-admin ]
 }
 
-resource "confluent_flink_statement" "PromptContext" {
-  organization {
-    id = data.confluent_organization.default.id
-  }
-  environment {
-    id = confluent_environment.default.id
-  }
-  compute_pool {
-    id = confluent_flink_compute_pool.default.id
-  }
-  principal {
-    id = confluent_service_account.default.id
-  }
-  statement  = "CREATE TABLE PromptContext (id STRING NOT NULL, temperature DOUBLE NOT NULL, `model` STRING NOT NULL, messages ARRAY<ROW<role STRING NOT NULL, content STRING NOT NULL> NOT NULL> NOT NULL, PRIMARY KEY (`id`) NOT ENFORCED) DISTRIBUTED BY (id) INTO 1 BUCKETS;"
-  properties = {
-    "sql.current-catalog"  = confluent_environment.default.display_name
-    "sql.current-database" = confluent_kafka_cluster.default.display_name
-  }
-  rest_endpoint = data.confluent_flink_region.default.rest_endpoint
-  credentials {
-    key    = confluent_api_key.flink-default.id
-    secret = confluent_api_key.flink-default.secret
-  }
-
-  lifecycle {
-    prevent_destroy = false
-  }
-}
