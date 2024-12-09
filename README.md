@@ -2,18 +2,24 @@
 ### GenAI Powered Real time Sentiment Analysis Pipeline 
 ## Introduction
 
-<p> With Confluent Cloud Kafka as the central nervous system, the idea to operationalize and adopt GenAI managed services from various hyperscalers looks a very feasible reality. This hands-on workshop dives deep into building a real-time sentiment analysis pipeline leveraging the power of FlinkSQL, FlinkAI, VertexAI and Large Language Models (LLMs). We'll explore how to:</p>
+<p> With Confluent Cloud Kafka as the central nervous system, the idea to operationalize and adopt GenAI managed services from various hyperscalers looks a very feasible reality. This hands-on workshop dives deep into building a real-time sentiment analysis pipeline leveraging the power of FlinkSQL, FlinkAI, OpenAI and Large Language Models (LLMs). We'll explore how to:</p>
 
-<p> <b>Harness FlinkSQL for data enrichment:</b> Aggregate real-time financial data and market news analysis, enriching prompts with context retrieved from a vector database using FlinkSQL's powerful JOIN capabilities. </p>
-<p><b>Connect to the Vertex AI ecosystem:</b> Seamlessly integrate vertex embedding models and Vertexai LLM APIs with FlinkAI ,Vertex vector search with Kafka Connectors, simplifying communication and data flow.</p>
-<p><b>Build scalable pipelines with Confluent Cloud:</b> Leverage the robustness of Confluent Cloud Kafka clusters and Flink compute pools for real-time processing and analysis.</p>
-<p><b>Real-World Application:</b> We'll apply these techniques to build a sentiment analysis pipeline, demonstrating how to extract insights from financial data and market news in real-time.</p>
+<p> <b>FlinkSQL for Data Enrichment:</b> Utilize FlinkSQL to aggregate and enrich real-time financial data, market news, and other contextual information. We'll show how FlinkSQL's advanced JOIN capabilities integrate prompts with context from a vector database. </p>
+<p> <b>Seamless Integration with LLMs :</b> Connect FlinkAI with OpenAI's  LLM APIs, facilitating efficient communication and data flow. Use Kafka Connectors to integrate Mongo Vector search with LLM APIs.</p>
+<p> <b>Scalable Pipelines with Confluent Cloud:</b> Leverage Confluent Cloud Kafka clusters and Flink compute pools to build scalable, real-time data pipelines capable of processing and enriching data efficiently.</p>
 
 ## Architecture
 <p><img src="assets/img/architecture.png" alt="nim" /></p>
 
-## What you will learn
-<p><b>Key Takeaways:</b> Participants will gain practical experience with Confluent's <b>Connect, Process, Stream</b> paradigm, enabling them to build and deploy their own real-time RAG pipelines using <b>Google's VertexAI Capablities</b> and <b>Gemini endpoints</b>. This workshop not only provides a stepping stone towards Confluent certification but also unlocks new possibilities for real-time data analysis and decision-making.</p>
+## What You Will Learn
+
+**Key Takeaways:**
+- **Simplifying Confluent SDK Integration**: Learn how to easily build applications that produce to and consume from Confluent Cloud topics.
+- **Connecting FlinkAI with LLMs**: Integrate FlinkAI with powerful OpenAI LLM APIs and text embedding models.
+- **Generating Responses with LLMs**: Learn how to generate high-quality, context-aware responses using GPT models.
+- **Vector Storage & Retrieval with Vector Search**: Store and retrieve embeddings efficiently using MongoDB as the vector database.
+- **Deploying Fully Managed Sink Connectors**: Learn to deploy and manage Kafka sink connectors for seamless data transfer to MongoDB.
+- **Real-Time Data Transformation with Managed Flink**: Discover how to use Confluent's managed Flink offering for real-time data transformation and enriched prompt creation for AI models.
 
 ## Requirements
 - **Local Software Requirements:** 
@@ -27,7 +33,7 @@
     3. OpenAI API Key - https://platform.openai.com/api-keys 
     4. NewsAPI API Key - https://newsapi.org/register
 
-<p> <b>Note:</b>For OpenAI API Key, if you don't have any existing account, you can use your own API key else please reach out to workshop owners to get one.</p>
+<p> <b>Note:</b> For OpenAI API Key, if you don't have any existing account, you can use your own API key else please reach out to workshop owners to get one.</p>
 
 - **Sign up for Confluent Cloud**
     - Navigate to [Confluent Cloud Sign Up](https://confluent.cloud/signup).
