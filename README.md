@@ -1,4 +1,4 @@
-# Confluent and Vertex AI RAG Workshop
+# Confluent GenAI RAG Workshop
 ### GenAI Powered Real time Sentiment Analysis Pipeline 
 ## Introduction
 
@@ -170,7 +170,7 @@ Select the environment id for the environment created on your account.
 ```bash
 confluent env use --<YOUR_ENVIRONMENT_ID>
 ```
-Create a FlinkSQL connection to connect to gemini text embedding model.Please enter <REPLACE_WITH_YOUR_KEY> before running the command.
+Create a FlinkSQL connection to connect to openai text embedding model.Please enter <REPLACE_WITH_YOUR_KEY> before running the command.
 ```bash
 confluent flink connection create openai-embedding-connection \
 --cloud aws \
@@ -423,7 +423,7 @@ SELECT * FROM `KnowledgeInfusedPrompt` ;
 
 <p>Now we have obtained the full context for the prompt we have inserted , the next task is to feed this input to a ML_MODEL to get a desired response for the given prompt with the help of the obtained conext. Let's follow the below series to execute this</p>
 
-1. Create a flink sql connection to latest gemini model, similar to how we created for the embedding model.Please enter <YOUR_PROJECT_REGION> and <YOUR_PROJECT_ID> before running the command.
+1. Create a flink sql connection to latest openai model, similar to how we created for the embedding model.Please enter <YOUR_PROJECT_REGION> and <YOUR_PROJECT_ID> before running the command.
 ```sql
 confluent flink connection create openai-connection \
 --cloud aws \
