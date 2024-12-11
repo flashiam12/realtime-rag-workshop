@@ -33,7 +33,7 @@
     3. OpenAI API Key - https://platform.openai.com/api-keys 
     4. Confluent Cloud Account Access 
 
-<p> <b>Note:</b> For OpenAI API Key, if you don't have any existing account, you can use your own API key else please reach out to workshop owners to get one.</p>
+<p> <b>Note:</b> For OpenAI API Key, if you don't have any existing account, you can accept the invite from openai with subject Confluent Workshops on OpenAI received on the mail you registered for the workshop and create an openai key.</p>
 
 - **Sign up for Confluent Cloud**
     - Navigate to [Confluent Cloud Sign Up](https://confluent.cloud/signup?utm_campaign=tm.fm-ams_cd.Q424_AMER_GenAI_RAG_Workshop&utm_medium=workshop).
