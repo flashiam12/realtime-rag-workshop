@@ -28,10 +28,10 @@
     - [Confluent Cloud CLI](https://docs.confluent.io/confluent-cli/current/install.html)
 
 - **Access:** 
-    1. Confluent Cloud Account Access 
-    2. MongoDB Atlas Account Access
+    1. MongoDB Atlas Account Access - https://www.mongodb.com/
+    2. NewsAPI API Key - https://newsapi.org/register
     3. OpenAI API Key - https://platform.openai.com/api-keys 
-    4. NewsAPI API Key - https://newsapi.org/register
+    4. Confluent Cloud Account Access 
 
 <p> <b>Note:</b> For OpenAI API Key, if you don't have any existing account, you can use your own API key else please reach out to workshop owners to get one.</p>
 
