@@ -64,14 +64,24 @@ cd realtime-rag-workshop
 ```
 2. ### Create a Cloud API Key
 Create cloud api key for your confluent cloud account with resource scope as Cloud resource management.
-    * Go to https://confluent.cloud/settings/api-keys 
-    * Add API Key 
-    * Cloud resource management 
-    * Download API Key 
+- Go to https://confluent.cloud/settings/api-keys 
+- Add API Key 
+- Cloud resource management 
+- Download API Key 
 
 <p><img src="assets/img/apikey.png" alt="nim" width="300" /></p>
 
-3. ### Setup environment variables
+
+3. ### Create a MongoDB Programmatic Access API Key
+Create MongoDB Programmatic Access api key for your mongo account - https://www.mongodb.com/docs/atlas/configure-api-access-org/
+* In Atlas, go to the Organization Access Manager page.
+* Click the Applications tab
+* Click on Create API Key with Organization Owner Permissions
+* Save the API Key for further use.
+
+<p><img src="assets/img/apikeymongo.png" alt="nim" width="300" /></p>
+
+4. ### Setup environment variables
 
 1. Navigate to <b>confluent/scripts/scaffold_confluent_cloud.sh</b> and edit the following:
 
