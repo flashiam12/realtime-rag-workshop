@@ -42,7 +42,7 @@
     - Finish creating your account by filling in a couple of details.
         <p><img src="assets/img/finish.png" alt="finish" width="300" /></p>
     - Click on skip for adding your teammates for now. Feel free to add your teammates at a later point in time.
-        <p><img src="assets/img/finish.png" alt="finish" width="300" /></p>
+        <p><img src="assets/img/teammates.png" alt="finish" width="300" /></p>
     - Answer a couple of questions, and you are set to create your first cluster!
         <p><img src="assets/img/questions.png" alt="questions" width="300" /></p>
     - Click on "Next" to create a cluster and enter promo code details.
