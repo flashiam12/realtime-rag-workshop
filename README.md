@@ -82,8 +82,7 @@ Create MongoDB Programmatic Access api key for your mongo account - https://www.
 <p><img src="assets/img/apikeymongo.png" alt="nim" width="300" /></p>
 
 4. ### Setup environment variables
-
-1. Navigate to <b>confluent/scripts/scaffold_confluent_cloud.sh</b> and edit the following:
+    1. Navigate to <b>confluent/scripts/scaffold_confluent_cloud.sh</b> and edit the following:
 
 ```bash
 # confluent/scripts/scaffold_confluent_cloud.sh
